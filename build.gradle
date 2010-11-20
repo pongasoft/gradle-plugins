@@ -1,0 +1,39 @@
+
+/*
+ * Copyright (c) 2010-2010 LinkedIn, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+/**
+ * This project is tricky. It relies on the buildSrc feature of gradle to compile and use the
+ * plugin before invoking this build. Then the plugin itself gets recompiled as part of this build
+ * so that it can be published using the normal flow. This build uses the plugin it publishes!
+ */
+apply plugin: 'org.linkedin.userConfig'
+apply plugin: 'org.linkedin.spec'
+
+topBuildDir = userConfig.top.build.dir ?: "${rootDir}/out/build"
+
+apply plugin: 'org.linkedin.repository'
+
+allprojects {
+  group = spec.group
+  version = spec.version
+}
+
+subprojects {
+  sourceCompatibility = '1.6'
+  targetCompatibility = '1.6'
+  buildDir = "${topBuildDir}${project.path.replace(':','/')}".toString()
+}

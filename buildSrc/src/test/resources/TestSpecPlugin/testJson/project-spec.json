@@ -1,0 +1,25 @@
+{
+  "name": "gradle-plugins",
+  "group": "org.linkedin",
+  "version": "1.0.0",
+  "scmUrl": "git@github.com:linkedin/@spec.name@.git",
+
+  "properties": {
+    "groovy": "1.7.5"
+  },
+
+  "external": {
+    "json": "org.json:json:20090211",
+    "groovy": "org.codehaus.groovy:groovy:@spec.properties.groovy@"
+  },
+
+  "build": {
+    "type": "gradle",
+    "version": "0.9-rc-2",
+    "uri": "http://dist.codehaus.org/gradle/gradle-@spec.build.version@-all.zip",
+    "commands": {
+      "snapshot": "gradle -Psnapshot=true release",
+      "release": "gradle -Prelease=true release"
+    }
+  }
+}
