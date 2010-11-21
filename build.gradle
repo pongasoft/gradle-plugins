@@ -28,8 +28,16 @@ topBuildDir = userConfig.top.build.dir ?: "${rootDir}/out/build"
 apply plugin: 'org.linkedin.repository'
 
 allprojects {
+  apply plugin: 'idea'
   group = spec.group
   version = spec.version
+}
+
+// we use git
+ideaProject {
+  withXml { root ->
+    root.asNode().component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git'
+  }
 }
 
 subprojects {
