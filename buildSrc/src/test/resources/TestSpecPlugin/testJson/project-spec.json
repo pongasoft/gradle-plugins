@@ -4,13 +4,15 @@
   "version": "1.0.0",
   "scmUrl": "git@github.com:linkedin/@spec.name@.git",
 
-  "properties": {
+  "versions": {
     "groovy": "1.7.5"
   },
 
+  "artifacts": ["a1", "a2"],
+
   "external": {
     "json": "org.json:json:20090211",
-    "groovy": "org.codehaus.groovy:groovy:@spec.properties.groovy@"
+    "groovy": "org.codehaus.groovy:groovy:@spec.versions.groovy@"
   },
 
   "build": {

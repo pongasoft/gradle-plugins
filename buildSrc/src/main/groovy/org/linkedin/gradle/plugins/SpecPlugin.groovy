@@ -107,7 +107,7 @@ class SpecPlugin implements Plugin<Project>
       try
       {
         def projectSpec = JsonUtils.fromJSON(projectSpectFile.text)
-        if(projectSpec.properties && expandProperties)
+        if(expandProperties)
           projectSpec = expandJSONProperties(projectSpectFile, Utils.flatten(projectSpec))
         return projectSpec
       }

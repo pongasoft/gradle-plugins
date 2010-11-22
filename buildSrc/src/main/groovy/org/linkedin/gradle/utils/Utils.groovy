@@ -47,6 +47,9 @@ class Utils
   }
 
   /**
+   * Note that this class is copied from linkedin-utils.
+   * We don't really want to have this kind of dependency in this base project.
+   * 
    * Flattens the map. Ex: [a: 1, b: [1,2], c: [d: 1]] returns a map:
    * <code>[a: 1, 'b[0]': 1, 'b[1]': 2, 'c.d': 1]</code>
    * @return a new map
@@ -96,6 +99,27 @@ class Utils
         default:
           flattenedMap[key] = v
 
+      }
+    }
+  }
+
+  private static void doFlatten(Collection c, def flattenedMap, String prefix)
+  {
+    c?.eachWithIndex { e, idx ->
+      def key = "${prefix}[${idx}]".toString()
+
+      switch(e)
+      {
+        case { e instanceof Map}:
+          doFlatten(e, flattenedMap, key)
+          break
+
+        case { e instanceof Collection}:
+          doFlatten(e, flattenedMap, key)
+          break
+
+        default:
+          flattenedMap[key] = e
       }
     }
   }
