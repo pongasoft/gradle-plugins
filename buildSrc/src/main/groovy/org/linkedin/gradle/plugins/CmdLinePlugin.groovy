@@ -37,16 +37,28 @@ class CmdLinePlugin implements Plugin<Project>
      ********************************************************/
     def packageAssembleTask =
     project.task([description: "Assembles the package (exploded)"], 'package-assemble') << {
-      def lib = new File(convention.assemblePackageFile, 'lib')
 
-      project.copy {
-        from project.configurations.default
-        into lib
-      }
-
-      project.copy {
-        from project.configurations.archives.artifacts.file
-        into lib
+      convention.resourcesConfigurations?.each { configuration, dir ->
+        configuration = project.configurations.findByName(configuration)
+        if(dir instanceof String)
+        {
+          dir = new File(convention.assemblePackageFile, dir)
+        }
+        if(configuration?.resolve())
+        {
+          project.copy {
+            from configuration.resolve()
+            into dir
+          }
+        }
+        
+        if(configuration?.artifacts)
+        {
+          project.copy {
+            from configuration.artifacts.file
+            into dir
+          }
+        }
       }
 
       project.copy {
@@ -157,6 +169,12 @@ class CmdLinePluginConvention
   Compression compression = Compression.GZIP
   String packageExtension
   def artifactConfigurations = ['package']
+  
+  /**
+   * Map of configurations: key is configuration name,
+   * value is folder (relative to convention.assemblePackageFile if String)
+   */
+  def resourcesConfigurations = ['default': 'lib']
 
   private final Project _project
 
