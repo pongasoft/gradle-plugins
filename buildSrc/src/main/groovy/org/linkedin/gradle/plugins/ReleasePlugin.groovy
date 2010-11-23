@@ -34,6 +34,8 @@ import org.gradle.api.artifacts.Configuration
 class ReleasePlugin implements Plugin<Project>
 {
   public static final String RELEASE_MASTER_CONFIGURATION = 'releaseMaster'
+  public static final String DOCS_CONFIGURATION = 'docs'
+  public static final String SOURCES_CONFIGURATION = 'sources'
   public static final String PUBLISH_MASTER_CONFIGURATION = 'publishMaster'
 
   void apply(Project project)
@@ -124,10 +126,17 @@ class ReleasePlugin implements Plugin<Project>
       def taskNames = ['release', 'publish', 'install'] as Set
       if(project.gradle.startParameter.taskNames.find { taskNames.contains(it)})
       {
-        ['sourcesJar', 'javadocJar', 'groovydocJar'].each { taskName ->
+        [
+            'sourcesJar': SOURCES_CONFIGURATION,
+            'javadocJar': DOCS_CONFIGURATION,
+            'groovydocJar': DOCS_CONFIGURATION
+        ].each { taskName, configuration ->
           if(project.tasks.findByName(taskName))
+          {
+            addToReleaseMaster(project, configuration)
             project.artifacts {
-              archives project."${taskName}"
+              "${configuration}" project."${taskName}"
+            }
           }
         }
       }

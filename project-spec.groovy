@@ -16,7 +16,7 @@
 spec = [
     name: 'gradle-plugins',
     group: 'org.linkedin',
-    version: '1.0.1',
+    version: '1.0.2',
 
     properties: [
       groovy: '1.7.5'
