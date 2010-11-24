@@ -167,9 +167,9 @@ class ReleasePlugin implements Plugin<Project>
     Configuration ac = null
     if(mrc)
     {
-      ac = addExtendsFrom(project,
-                          ReleasePlugin.RELEASE_MASTER_CONFIGURATION,
-                          configuration)
+      (mrc, ac) = addExtendsFrom(project,
+                                 ReleasePlugin.RELEASE_MASTER_CONFIGURATION,
+                                 configuration)
     }
 
     return ac
@@ -181,16 +181,16 @@ class ReleasePlugin implements Plugin<Project>
    *
    * @return configuration
    */
-  static Configuration addExtendsFrom(Project project,
-                                      String configurationName,
-                                      String extendsFromConfigurationName)
+  static def addExtendsFrom(Project project,
+                            String configurationName,
+                            String extendsFromConfigurationName)
   {
     Configuration configuration = findOrAddConfiguration(project, configurationName)
     Configuration extendsFromConfiguration =
-      findOrAddConfiguration(project, extendsFromConfigurationName)
+    findOrAddConfiguration(project, extendsFromConfigurationName)
     if(!configuration.extendsFrom.contains(extendsFromConfiguration))
       configuration.extendsFrom(extendsFromConfiguration)
-    return configuration
+    return [configuration, extendsFromConfiguration]
   }
 
   /**
