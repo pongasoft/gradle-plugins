@@ -87,16 +87,10 @@ class ReleasePlugin implements Plugin<Project>
                    description: "Publishes in a repository [${publishRepositoryName}]"], 
                    'publish')
 
-      if(project.plugins.hasPlugin('java'))
+      boolean hasSources = false
+      def javaSources = project.tasks.findByName('javadoc')?.source
+      if(javaSources && !javaSources.isEmpty())
       {
-        /********************************************************
-         * task: sourcesJar
-         ********************************************************/
-        project.task([type: Jar, dependsOn: "classes"], 'sourcesJar') {
-            classifier = 'sources'
-            from project.sourceSets.main.allSource
-        }
-
         /********************************************************
          * task: javadocJar
          ********************************************************/
@@ -104,9 +98,12 @@ class ReleasePlugin implements Plugin<Project>
             classifier = 'javadoc'
             from project.javadoc.destinationDir
         }
+
+        hasSources = true
       }
 
-      if(project.plugins.hasPlugin('groovy'))
+      def groovySources = project.tasks.findByName('groovydoc')?.source
+      if(groovySources && !groovySources.isEmpty())
       {
         /********************************************************
          * task: groovydocJar
@@ -114,6 +111,19 @@ class ReleasePlugin implements Plugin<Project>
         project.task([type: Jar, dependsOn: "groovydoc"], 'groovydocJar') {
             classifier = 'groovydoc'
             from project.groovydoc.destinationDir
+        }
+
+        hasSources = true
+      }
+
+      if(hasSources)
+      {
+        /********************************************************
+         * task: sourcesJar
+         ********************************************************/
+        project.task([type: Jar, dependsOn: "classes"], 'sourcesJar') {
+            classifier = 'sources'
+            from project.sourceSets.main.allSource
         }
       }
 
