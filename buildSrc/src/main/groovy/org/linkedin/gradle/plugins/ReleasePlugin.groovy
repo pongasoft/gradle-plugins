@@ -135,17 +135,17 @@ class ReleasePlugin implements Plugin<Project>
       if(project.gradle.startParameter.taskNames.find { taskNames.contains(it)})
       {
         [
-            'sourcesJar': convention.sourcesConfiguration,
-            'javadocJar': convention.docsConfiguration,
-            'groovydocJar': convention.docsConfiguration
-        ].each { taskName, configuration ->
-          if(configuration)
+            'sourcesJar': convention.sourcesConfigurations,
+            'javadocJar': convention.javadocConfigurations,
+            'groovydocJar': convention.groovydocConfigurations
+        ].each { taskName, configurations ->
+          if(project.tasks.findByName(taskName))
           {
-            if(project.tasks.findByName(taskName))
-            {
-              addToReleaseMaster(project, configuration)
+            configurations.each { configurationName, extendsFroms ->
+              addToReleaseMaster(project, configurationName)
+              extendsFroms?.each { addExtendsFrom(project, configurationName, it) }
               project.artifacts {
-                "${configuration}" project."${taskName}"
+                "${configurationName}" project."${taskName}"
               }
             }
           }
@@ -167,24 +167,52 @@ class ReleasePlugin implements Plugin<Project>
     Configuration ac = null
     if(mrc)
     {
-      ac = project.configurations.findByName(configuration)
-      if(!ac)
-      {
-        ac = project.configurations.add(configuration)
-      }
-      if(!mrc.extendsFrom.contains(ac))
-        mrc.extendsFrom(ac)
+      ac = addExtendsFrom(project,
+                          ReleasePlugin.RELEASE_MASTER_CONFIGURATION,
+                          configuration)
     }
 
     return ac
   }
+
+  /**
+   * Equivalent to <code>configuration.extendsFrom(extendsFromConfiguration)</code> but do proper
+   * checking to create the configuration if does not exist in the first place.
+   *
+   * @return configuration
+   */
+  static Configuration addExtendsFrom(Project project,
+                                      String configurationName,
+                                      String extendsFromConfigurationName)
+  {
+    Configuration configuration = findOrAddConfiguration(project, configurationName)
+    Configuration extendsFromConfiguration =
+      findOrAddConfiguration(project, extendsFromConfigurationName)
+    if(!configuration.extendsFrom.contains(extendsFromConfiguration))
+      configuration.extendsFrom(extendsFromConfiguration)
+    return configuration
+  }
+
+  /**
+   * Find or add a configuration if does not exist yet
+   * @return the configuration
+   */
+  static Configuration findOrAddConfiguration(Project project, String configurationName)
+  {
+    Configuration configuration = project.configurations.findByName(configurationName)
+    if(!configuration)
+      configuration = project.configurations.add(configurationName)
+    return configuration
+  }
+
 }
 
 class ReleasePluginConvention
 {
   def releaseConfigurations = ['archives'] as Set
-  String sourcesConfiguration = 'sources'
-  String docsConfiguration = 'docs'
+  def sourcesConfigurations = [sources: []]
+  def javadocConfigurations = [javadoc: ['docs']]
+  def groovydocConfigurations = [groovydoc: ['docs']]
 
   def release(Closure closure)
   {

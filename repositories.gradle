@@ -49,7 +49,7 @@ allRepositories.snapshotPublish = {
     pom.whenConfigured { pomToConfigure ->
       pomToConfigure.project {
         name project.name
-        description 'A usefule set of gradle plugins'
+        description 'A useful set of gradle plugins'
         url 'http://github.com/linkedin/gradle-plugins'
         licenses {
           license {
