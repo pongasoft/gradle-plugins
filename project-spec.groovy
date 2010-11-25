@@ -18,7 +18,7 @@ spec = [
     group: 'org.linkedin',
     version: '1.1.0',
 
-    properties: [
+    versions: [
       groovy: '1.7.5'
     ],
 
@@ -41,5 +41,5 @@ spec.scmUrl = "git@github.com:linkedin/${spec.name}.git"
  */
 spec.external = [
     json: 'org.json:json:20090211',
-    groovy: "org.codehaus.groovy:groovy:${spec.properties.groovy}"
+    groovy: "org.codehaus.groovy:groovy:${spec.versions.groovy}"
 ]
