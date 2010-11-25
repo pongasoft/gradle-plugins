@@ -59,7 +59,8 @@ This plugin should be used only in the root project when doing a multi project b
 
 * 'org.linkedin.release' is a plugin which adds 'release' and 'publish' tasks. 'release' is supposed
 to build and release in a local repository. 'publish' is supposed to build and publish in a remote
-repository. None of this is enforced and you can still use whichever convention you want. The
+repository. None of this is enforced and you can still use whichever convention you want. If it is a
+java or groovy project, it also release/publish sources, javadoc and groovydoc. The
 repositories are configured using the 'org.linkedin.repository' plugin with the following values:
 allRepositories.release -> for release
 allRepositories.snapshotRelease -> for release of snapshots
