@@ -4,6 +4,16 @@ This project contains a set of useful gradle plugins
 
 2. Plugins
 ----------
+* In order to use the plugins you need to add this to your build script:
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'org.linkedin:org.linkedin.gradle-plugins:1.1.0'
+  }
+}
+
 * 'org.linkedin.userConfig' is a plugin which attempts to load user configuration (for the gradle
 build) in the following files (values read last overrides previous values) and make it available
 to all gradle build files as a 'userConfig' object (instance of groovy.util.ConfigObject). See
