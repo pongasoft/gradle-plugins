@@ -23,14 +23,25 @@ import org.gradle.api.Project
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.tasks.bundling.Compression
 import org.linkedin.gradle.tasks.Tar
+import org.gradle.api.artifacts.Configuration
 
 class CmdLinePlugin implements Plugin<Project>
 {
+  public static final String LIB_CONFIGURATION = 'lib'
+
+  Project project
+
   void apply(Project project)
   {
+    this.project = project
+
+    def libConfiguration = ReleasePlugin.findOrAddConfiguration(project, LIB_CONFIGURATION)
+
     def convention = new CmdLinePluginConvention(project)
+    convention.resourcesConfigurations[libConfiguration] = 'lib'
 
     project.convention.plugins.cmdline = convention
+
 
     /********************************************************
      * task: package-assemble
@@ -39,7 +50,7 @@ class CmdLinePlugin implements Plugin<Project>
     project.task([description: "Assembles the package (exploded)"], 'package-assemble') << {
 
       convention.resourcesConfigurations?.each { configuration, dir ->
-        configuration = project.configurations.findByName(configuration)
+        configuration = findConfiguration(configuration)
         if(dir instanceof String)
         {
           dir = new File(convention.assemblePackageFile, dir)
@@ -132,6 +143,13 @@ class CmdLinePlugin implements Plugin<Project>
         packageAssembleTask.dependsOn = convention.dependsOn
       }
 
+      // adding all the configurations as dependencies
+      convention.resourcesConfigurations?.keySet()?.each { c ->
+        Configuration configuration = findConfiguration(c)
+        if(configuration)
+          packageAssembleTask.dependsOn(configuration)
+      }
+
       project.configure(packageTask) {
         archiveSourcePath      = convention.assemblePackageFile
         archiveDestinationPath = convention.packageFile
@@ -145,6 +163,17 @@ class CmdLinePlugin implements Plugin<Project>
         ]
       }
     }
+  }
+
+  private Configuration findConfiguration(c)
+  {
+    if(c == null)
+      return null
+
+    if(c instanceof Configuration)
+      return c
+    else
+      return project.configurations.findByName(c.toString())
   }
 }
 
@@ -174,7 +203,7 @@ class CmdLinePluginConvention
    * Map of configurations: key is configuration name,
    * value is folder (relative to convention.assemblePackageFile if String)
    */
-  def resourcesConfigurations = ['default': 'lib']
+  def resourcesConfigurations = [:]
 
   private final Project _project
 

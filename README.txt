@@ -60,8 +60,9 @@ This plugin should be used only in the root project when doing a multi project b
 * 'org.linkedin.release' is a plugin which adds 'release' and 'publish' tasks. 'release' is supposed
 to build and release in a local repository. 'publish' is supposed to build and publish in a remote
 repository. None of this is enforced and you can still use whichever convention you want. If it is a
-java or groovy project, it also release/publish sources, javadoc and groovydoc. The
-repositories are configured using the 'org.linkedin.repository' plugin with the following values:
+java or groovy project, it also release/publish sources, javadoc and groovydoc. The plugin also
+knows about snapshots (where the version ends with -SNAPSHOT). The repositories are configured
+using the 'org.linkedin.repository' plugin with the following values:
 allRepositories.release -> for release
 allRepositories.snapshotRelease -> for release of snapshots
 allRepositories.publish -> for publish
@@ -76,6 +77,7 @@ This plugin is used in every project that needs to be released.
 - package: Create the package
 - package-install: Install the package (locally)
 - package-clean-install: Cleans the (previously) installed package
+and a 'lib' configuration on which you add your dependencies.
 
 By convention (configurable), the result of the 'package' task is a tgz which contains a directory
 structure like this:
@@ -92,6 +94,10 @@ This plugin is highly configurable through the CmdLinePluginConvention available
 as 'cmdline':
 
 example:
+dependencies {
+  lib project(':project1')
+  lib 'org.json:json:20090211'
+}
 cmdline {
   replacementTokens = [__version__: project.version]
 }

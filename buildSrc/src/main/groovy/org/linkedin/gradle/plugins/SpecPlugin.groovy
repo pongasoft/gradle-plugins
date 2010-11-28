@@ -58,6 +58,9 @@ class SpecPlugin implements Plugin<Project>
       if(project.spec.version.endsWith('-SNAPSHOT'))
         throw new IllegalStateException("${project.spec.version} is a snapshot version")
     }
+
+    def mode = project.spec.version.endsWith('-SNAPSHOT') ? 'snapshot': 'release'
+    project.logger.lifecycle "Working in ${mode} mode: ${project.spec.version}"
   }
 
   /**
