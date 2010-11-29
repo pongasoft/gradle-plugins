@@ -10,7 +10,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'org.linkedin:org.linkedin.gradle-plugins:1.1.0'
+    classpath 'org.linkedin:org.linkedin.gradle-plugins:1.2.0'
   }
 }
 
