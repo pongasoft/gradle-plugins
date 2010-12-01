@@ -47,16 +47,17 @@ class SpecPlugin implements Plugin<Project>
    */
   def configureProject()
   {
-    if(project.hasProperty('snapshot') && project.snapshot.toString() == 'true')
-    {
-      if(!project.spec.version.endsWith('-SNAPSHOT'))
-        project.spec.version = "${project.spec.version}-SNAPSHOT".toString()
-    }
-    
+    // unless -Prealease=true is provided on the command line (or in ~/.gradle.properties)
+    // we force the snapshot mode
     if(project.hasProperty('release') && project.release.toString() == 'true')
     {
       if(project.spec.version.endsWith('-SNAPSHOT'))
         throw new IllegalStateException("${project.spec.version} is a snapshot version")
+    }
+    else
+    {
+      if(!project.spec.version.endsWith('-SNAPSHOT'))
+        project.spec.version = "${project.spec.version}-SNAPSHOT".toString()
     }
 
     def mode = project.spec.version.endsWith('-SNAPSHOT') ? 'snapshot': 'release'

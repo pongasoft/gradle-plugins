@@ -10,7 +10,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'org.linkedin:org.linkedin.gradle-plugins:1.2.0'
+    classpath 'org.linkedin:org.linkedin.gradle-plugins:1.3.0'
   }
 }
 
@@ -34,9 +34,9 @@ This plugin should be used only in the root project when doing a multi project b
 
 * 'org.linkedin.spec' is a plugin which reads a file called project-spec.groovy (or
 project-spec.json) and makes it available in all build files as a 'spec' object (instance of
-java.util.Map). This plugin automatically handles version and allow you to run
-'gradle -Psnapshot=true' in order to build snapshots without having to edit the file. See an
-example of this file and how it is being used in this project itself!
+java.util.Map). This plugin automatically handles 'spec.version' in this fashion: always force
+snapshot mode (meaning version ends with -SNAPSHOT) unless -Prelease=true is provided when
+running the build. See an example of this file and how it is being used in this project itself!
 
 * 'org.linkedin.repository' is a plugin which allows you to externalize repository configuration
 and override it with your own defaults (for example if you do not want to use maven central). In a
