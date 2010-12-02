@@ -67,6 +67,7 @@ class UserConfigPlugin implements Plugin<Project>
       catch (Exception e)
       {
         project.logger.warn "Exception while parsing ${configFile}: ${e.message}... skipping"
+        return null
       }
     }
     else

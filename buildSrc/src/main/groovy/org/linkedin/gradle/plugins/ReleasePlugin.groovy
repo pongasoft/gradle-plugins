@@ -14,8 +14,6 @@
  * the License.
  */
 
-
-
 package org.linkedin.gradle.plugins
 
 import org.gradle.api.Project
@@ -24,11 +22,28 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.artifacts.Configuration
 
 /**
- * This plugin adds a 'release' task and creates a 'releaseMaster' configuration.
- * This plugin also adds a 'publish' taks and creates a 'publishMaster' configuration (extends
- * from releaseMaster) .
- * If you want your artifacts to be 'released'/'published' then simply add them to a configuration
- * and make masterRelease extends from it.
+ * This plugin adds a 'release' and 'publish' task.
+ *
+ * <p>For 'release', it uses the 'releaseMaster' configuration and configure the
+ * <code>uploadReleaseMaster</code> task with the following repositories
+ * <ul>
+ * <li>release => uses allRespositories.release</li>
+ * <li>release (snapshot mode) => uses allRespositories.snapshotRelease</li>
+ * </ul>
+ *
+ * <p>For 'publish', it uses the 'publishMaster' configuration and configure the
+ * <code>uploadPublishMaster</code> task with the following repositories
+ * <ul>
+ * <li>publish => uses allRespositories.publish</li>
+ * <li>publish (snapshot mode) => uses allRespositories.snapshotPublish</li>
+ * </ul>
+ * 
+ * If you want your artifacts to be 'released'/'published' then simply add them to either
+ * the 'releaseMaster' configuration or to a new configuration and make 'releaseMaster' extends
+ * from it.
+ *
+ * By convention ({@link ReleasePluginConvention#releaseConfigurations}) 'releaseMaster' extends
+ * from 'archives'.
  *
  * @author ypujante@linkedin.com */
 class ReleasePlugin implements Plugin<Project>
@@ -48,8 +63,8 @@ class ReleasePlugin implements Plugin<Project>
     project.convention.plugins.release = convention
 
     // creating the configurations
-    def mrc = project.configurations.add(RELEASE_MASTER_CONFIGURATION)
-    project.configurations.add(PUBLISH_MASTER_CONFIGURATION).extendsFrom(mrc)
+    findOrAddConfiguration(project, RELEASE_MASTER_CONFIGURATION)
+    addExtendsFrom(project, PUBLISH_MASTER_CONFIGURATION, RELEASE_MASTER_CONFIGURATION)
 
     /**
      * Needs to be executed after the build script has been evaluated
@@ -127,26 +142,18 @@ class ReleasePlugin implements Plugin<Project>
         }
       }
 
-      /**
-       * Adding sources and java/groovy doc to the archives configuration when running
-       * release or publish or install
-       */
-      def taskNames = ['release', 'publish', 'install'] as Set
-      if(project.gradle.startParameter.taskNames.find { taskNames.contains(it)})
-      {
-        [
-            'sourcesJar': convention.sourcesConfigurations,
-            'javadocJar': convention.javadocConfigurations,
-            'groovydocJar': convention.groovydocConfigurations
-        ].each { taskName, configurations ->
-          if(project.tasks.findByName(taskName))
-          {
-            configurations.each { configurationName, extendsFroms ->
-              addToReleaseMaster(project, configurationName)
-              extendsFroms?.each { addExtendsFrom(project, configurationName, it) }
-              project.artifacts {
-                "${configurationName}" project."${taskName}"
-              }
+      [
+          'sourcesJar': convention.sourcesConfigurations,
+          'javadocJar': convention.javadocConfigurations,
+          'groovydocJar': convention.groovydocConfigurations
+      ].each { taskName, configurations ->
+        if(project.tasks.findByName(taskName))
+        {
+          configurations.each { configurationName, extendsFroms ->
+            addToReleaseMaster(project, configurationName)
+            extendsFroms?.each { addExtendsFrom(project, configurationName, it) }
+            project.artifacts {
+              "${configurationName}" project."${taskName}"
             }
           }
         }
@@ -187,8 +194,9 @@ class ReleasePlugin implements Plugin<Project>
   {
     Configuration configuration = findOrAddConfiguration(project, configurationName)
     Configuration extendsFromConfiguration =
-    findOrAddConfiguration(project, extendsFromConfigurationName)
-    if(!configuration.extendsFrom.contains(extendsFromConfiguration))
+      findOrAddConfiguration(project, extendsFromConfigurationName)
+    if(configuration != extendsFromConfiguration &&
+       !configuration.extendsFrom.contains(extendsFromConfiguration))
       configuration.extendsFrom(extendsFromConfiguration)
     return [configuration, extendsFromConfiguration]
   }
