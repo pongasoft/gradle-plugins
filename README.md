@@ -123,6 +123,7 @@ as `cmdline`:
         }
         cmdline {
           replacementTokens = [__version__: project.version]
+          resources << fileTree(dir: rootDir, includes: ['*.txt', '*.md'])
         }
 
 4. Compilation

@@ -1,3 +1,12 @@
+1.4.0 (2010/12/14)
+------------------
+* changed `org.linkedin.cmdline` plugin to use a `resources` convention (instead of `resourcesDir`) which is a list of whatever can be provided as an input of `CopySpec.from` (with a default of `'src/cmdline/resources'`)
+
+        Example:
+        cmdline {
+          resources << fileTree(dir: rootDir, includes: ['*.txt', '*.md'])
+        }
+
 1.3.1 (2010/12/02)
 ------------------
 * changed `org.linkedin.spec` to be in snapshot mode by default and use `-Prelease=true` to force non snapshot

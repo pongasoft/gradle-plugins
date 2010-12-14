@@ -72,12 +72,14 @@ class CmdLinePlugin implements Plugin<Project>
         }
       }
 
-      project.copy {
-        from(convention.resourcesDir) {
-          if(convention.replacementTokens)
-            filter(tokens: convention.replacementTokens, ReplaceTokens)
+      convention.resources?.each { resource ->
+        project.copy {
+          from(resource) {
+            if(convention.replacementTokens)
+              filter(tokens: convention.replacementTokens, ReplaceTokens)
+          }
+          into convention.assemblePackageFile
         }
-        into convention.assemblePackageFile
       }
 
       convention.folders?.each { project.mkdir(new File(convention.assemblePackageFile, it)) }
@@ -192,7 +194,7 @@ class CmdLinePluginConvention
   File installDir
   File installFile
   def replacementTokens = [:]
-  File resourcesDir
+  def resources = ['src/cmdline/resources']
   def folders = ['logs']
   String cmdlineLogLevel = "info"
   Compression compression = Compression.GZIP
@@ -212,7 +214,6 @@ class CmdLinePluginConvention
     _project = project;
     basePackageName = project.name
     packageVersion = project.version
-    resourcesDir = new File(project.projectDir, 'src/cmdline/resources')
   }
 
   def cmdline(Closure closure)
