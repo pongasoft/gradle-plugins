@@ -1,3 +1,8 @@
+1.5.0 (2010/12/20)
+------------------
+* changed `org.linkedin.cmdline` plugin to allow more configurable `resources` (every entry can now be a map)
+* use of official `gradle 0.9` release!
+
 1.4.0 (2010/12/14)
 ------------------
 * changed `org.linkedin.cmdline` plugin to use a `resources` convention (instead of `resourcesDir`) which is a list of whatever can be provided as an input of `CopySpec.from` (with a default of `'src/cmdline/resources'`)

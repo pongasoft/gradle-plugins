@@ -11,7 +11,7 @@ In order to use the plugins you need to add this to your build script:
             mavenCentral()
           }
           dependencies {
-            classpath 'org.linkedin:org.linkedin.gradle-plugins:1.3.1'
+            classpath 'org.linkedin:org.linkedin.gradle-plugins:1.5.0'
           }
         }
 
@@ -131,7 +131,7 @@ as `cmdline`:
 In order to compile the code you need
 
 * java 1.6
-* [gradle 0.9-rc2](http://www.gradle.org/)
+* [gradle 0.9](http://www.gradle.org/)
 
 At the top simply run
 

@@ -24,6 +24,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.tasks.bundling.Compression
 import org.linkedin.gradle.tasks.Tar
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.plugins.BasePlugin
 
 class CmdLinePlugin implements Plugin<Project>
 {
@@ -33,6 +34,8 @@ class CmdLinePlugin implements Plugin<Project>
 
   void apply(Project project)
   {
+    project.getPlugins().apply(BasePlugin.class);
+
     this.project = project
 
     def libConfiguration = ReleasePlugin.findOrAddConfiguration(project, LIB_CONFIGURATION)
@@ -73,12 +76,32 @@ class CmdLinePlugin implements Plugin<Project>
       }
 
       convention.resources?.each { resource ->
+        def resourceInto = convention.assemblePackageFile
+        def replaceTokens = true
+        def resourceFrom = null
+
+        if(resource instanceof Map)
+        {
+          resourceInto = resource.into ?: resourceInto
+          replaceTokens = resource.replaceTokens == null ? replaceTokens : resource.replaceTokens
+          resourceFrom = resource.from
+        }
+        else
+        {
+          resourceFrom = resource
+        }
+
+        if(!resourceFrom)
+        {
+          throw new IllegalArgumentException("missing 'from' for ${resource}")
+        }
+
         project.copy {
-          from(resource) {
-            if(convention.replacementTokens)
+          from(resourceFrom) {
+            if(replaceTokens && convention.replacementTokens)
               filter(tokens: convention.replacementTokens, ReplaceTokens)
           }
-          into convention.assemblePackageFile
+          into resourceInto
         }
       }
 
@@ -194,6 +217,21 @@ class CmdLinePluginConvention
   File installDir
   File installFile
   def replacementTokens = [:]
+
+  /**
+   * Each entry in the list is a map with the following:
+   * <li>from: anything that can be used directly in the 'from' field of the copy task</li>
+   * <li>into: anything that can be used directly in the 'into'
+   *          field of the copy task (optional => default to {@link #assemblePackageFile})</li>
+   * <li>replaceTokens: a <code>boolean</code> to replace tokens or not (default to
+   *                    <code>true</code>)</li>
+   *
+   * For convenience, you can use a shortcut notation containing only the 'from' part in which case
+   * it will be converted as:
+   * <pre>
+   * [from: from, into: <assemblePackageFile>, replaceTokens: true]
+   * </pre>
+   */
   def resources = ['src/cmdline/resources']
   def folders = ['logs']
   String cmdlineLogLevel = "info"

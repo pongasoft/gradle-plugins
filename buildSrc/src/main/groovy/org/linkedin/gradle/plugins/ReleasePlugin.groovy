@@ -20,6 +20,7 @@ import org.gradle.api.Project
 import org.gradle.api.Plugin
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.plugins.BasePlugin
 
 /**
  * This plugin adds a 'release' and 'publish' task.
@@ -53,6 +54,8 @@ class ReleasePlugin implements Plugin<Project>
 
   void apply(Project project)
   {
+    project.getPlugins().apply(BasePlugin.class);
+
     if(!project.rootProject.plugins.hasPlugin('org.linkedin.repository'))
     {
       project.rootProject.apply plugin: RepositoryPlugin
