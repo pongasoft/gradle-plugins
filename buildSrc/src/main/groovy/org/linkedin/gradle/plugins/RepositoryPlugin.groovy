@@ -33,7 +33,7 @@ class RepositoryPlugin implements Plugin<Project>
 {
   void apply(Project project)
   {
-    def factory = project.gradle.services.getFactory(RepositoryHandler.class)
+    def factory = project.services.get(RepositoryHandler.class)
 
     project.allRepositories = new RepositoryHandlerContainerImpl(repositoryHandlerFactory: factory)
 

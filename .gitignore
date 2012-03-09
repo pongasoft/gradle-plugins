@@ -5,3 +5,4 @@
 .idea
 buildSrc/build
 out
+build/

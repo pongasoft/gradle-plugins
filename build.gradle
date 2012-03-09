@@ -34,8 +34,9 @@ allprojects {
 }
 
 // we use git
-ideaProject {
-  withXml { root ->
+idea.project {
+  modules = modules.findAll {it.name != project.name}
+  ipr.withXml { root ->
     root.asNode().component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git'
   }
 }
