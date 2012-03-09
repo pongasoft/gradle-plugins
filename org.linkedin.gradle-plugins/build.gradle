@@ -36,3 +36,9 @@ sourceSets {
     }
   }
 }
+
+idea.module {
+    contentRoot = rootProject.file('buildSrc')
+    excludeDirs += rootProject.file('buildSrc/build')
+    excludeDirs += rootProject.file('buildSrc/.gradle')
+}
