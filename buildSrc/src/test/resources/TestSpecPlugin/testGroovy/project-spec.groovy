@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2010-2010 LinkedIn, Inc
- * Portions Copyright (c) 2013 Yan Pujante
+ * Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,32 +14,34 @@
  * the License.
  */
 spec = [
-    name: 'gradle-plugins',
-    group: 'org.linkedin',
-    version: '1.5.glu47.0',
+  name: 'gradle-plugins',
+  group: 'org.linkedin',
+  version: '1.0.0',
 
-    versions: [
-      groovy: '2.0.7'
-    ],
+  versions: [
+    groovy: '1.7.5'
+  ],
 
   artifacts: ["a1", "a2"],
 
-    // information about the build framework itself
-    build: [
-        type: "gradle",
-        commands: [
-            "snapshot": "gradlew release",
-            "release": "gradlew -Prelease=true release"
-        ]
+  // information about the build framework itself
+  build: [
+    type: "gradle",
+    version: "0.9-rc-2",
+    commands: [
+      "snapshot": "gradle -Psnapshot=true release",
+      "release": "gradle -Prelease=true release"
     ]
+  ]
 ]
 
 spec.scmUrl = "git@github.com:linkedin/${spec.name}.git"
+spec.build.uri = "http://dist.codehaus.org/gradle/gradle-${spec.build.version}-all.zip"
 
 /**
  * External dependencies
  */
 spec.external = [
-    json: 'org.json:json:20090211',
-    groovy: "org.codehaus.groovy:groovy:${spec.versions.groovy}"
+  json: 'org.json:json:20090211',
+  groovy: "org.codehaus.groovy:groovy:${spec.versions.groovy}"
 ]

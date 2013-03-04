@@ -6,3 +6,4 @@
 buildSrc/build
 out
 build/
+buildSrc/src/test/resources/TestSpecPlugin/testGroovy/userHome

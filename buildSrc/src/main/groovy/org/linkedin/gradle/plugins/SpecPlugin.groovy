@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Portions Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,6 +38,10 @@ class SpecPlugin implements Plugin<Project>
   void apply(Project project)
   {
     this.project = project
+
+    project.ext {
+      spec = [:]
+    }
 
     parseProjectSpec()
     configureProject()
@@ -91,7 +96,7 @@ class SpecPlugin implements Plugin<Project>
     return parseProjectSpec(new File(tmpFolder, 'project-spec.json'), false)
   }
 
-  private void parseProjectSpec()
+  protected void parseProjectSpec()
   {
     File groovyProjectSpec = new File(project.rootDir, 'project-spec.groovy')
     if(groovyProjectSpec.exists())
@@ -100,7 +105,9 @@ class SpecPlugin implements Plugin<Project>
     }
     else
     {
-      project.spec = parseProjectSpec(new File(project.rootDir, 'project-spec.json'), true)
+      project.ext {
+        spec = parseProjectSpec(new File(project.rootDir, 'project-spec.json'), true)
+      }
     }
   }
 

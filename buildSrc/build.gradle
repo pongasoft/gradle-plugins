@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Portions Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +17,9 @@
 
 apply plugin: 'groovy'
 
+sourceCompatibility = '1.6'
+targetCompatibility = '1.6'
+
 repositories {
   mavenCentral()
 }
@@ -23,7 +27,7 @@ repositories {
 dependencies {
   compile gradleApi()
   compile 'org.json:json:20090211'
-  groovy 'org.codehaus.groovy:groovy:1.7.5'
+  compile 'org.codehaus.groovy:groovy-all:2.0.7'
 
   testCompile 'junit:junit:4.4'
 }
