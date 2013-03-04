@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Portions Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,21 +30,41 @@ class Utils
     def propertyName = "${baseFilename}.${extension}"
     if(project.hasProperty(propertyName))
     {
-      return new File(project."${propertyName}")
+      return [new File(project."${propertyName}")]
     }
 
     def homeDir = new File(System.getProperty('user.home'))
-    
-    [
-        project.file("${baseFilename}.${extension}"),
-        project.file("${baseFilename}-${project.name}.${extension}"),
-        new File(homeDir, ".org.linkedin/${baseFilename}.${extension}"),
-        new File(homeDir, ".org.linkedin/${baseFilename}-${project.name}.${extension}"),
-        new File(homeDir, ".gradle/${baseFilename}.${extension}"),
-        new File(homeDir, ".gradle/${baseFilename}-${project.name}.${extension}"),
-        new File(homeDir, ".${baseFilename}.${extension}"),
-        new File(homeDir, ".${baseFilename}-${project.name}.${extension}")
-    ].findAll { it.exists() }
+
+    def names = [
+      "${baseFilename}.${extension}",
+      "${baseFilename}-${project.group}.${extension}",
+      "${baseFilename}-${project.name}.${extension}",
+      "${baseFilename}-${project.group}-${project.name}.${extension}"
+    ]
+
+    def filesToTry = []
+
+    // 1st local files
+    names.each {
+      filesToTry << project.file(it)
+    }
+
+    // 2nd $HOME/.org.linkedin/*
+    names.each {
+      filesToTry << new File(homeDir, ".org.linkedin/${it}")
+    }
+
+    // 3rd $HOME/.gradle/*
+    names.each {
+      filesToTry << new File(homeDir, ".gradle/${it}")
+    }
+
+    // 4th $HOME/.*
+    names.each {
+      filesToTry << new File(homeDir, ".${it}")
+    }
+
+    return filesToTry.findAll { it.exists() }
   }
 
   /**
