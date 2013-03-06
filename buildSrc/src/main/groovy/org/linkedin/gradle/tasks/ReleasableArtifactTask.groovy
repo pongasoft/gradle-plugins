@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Portions Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,7 +46,7 @@ abstract class ReleasableArtifactTask extends DefaultTask
           def artifact = new PublishArtifactImpl(artifact: artifactInfo,
                                                  file: artifactFile,
                                                  taskDependency: this)
-          conf.addArtifact(artifact)
+          conf.artifacts.add(artifact)
 
           res << artifact
         }

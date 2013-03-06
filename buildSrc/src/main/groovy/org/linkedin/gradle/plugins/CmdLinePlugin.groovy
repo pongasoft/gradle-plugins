@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Portions Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -257,7 +258,21 @@ class CmdLinePluginConvention
   def cmdline(Closure closure)
   {
     closure.delegate = this
-    closure()
+    def projectResources = closure.thisObject.resources
+    try
+    {
+      // this issue is that closure.thisObject is of type Project and "resources" is already
+      // taken => we change the meaning during execution of the closure and we restore it
+      // afterwards!
+      closure.thisObject.metaClass.getResources = {
+        return getResources()
+      }
+      closure()
+    }
+    finally
+    {
+      closure.thisObject.metaClass.getResources =  { projectResources }
+    }
   }
 
   String getPackageName()
@@ -347,7 +362,7 @@ class CmdLinePluginConvention
   {
     if(!packageExtension)
     {
-      return compression.extension
+      return compression.defaultExtension
     }
     else
     {
