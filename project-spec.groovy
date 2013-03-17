@@ -20,7 +20,7 @@ spec = [
     version: '1.5.glu47.2',
 
     versions: [
-      groovy: '2.0.7'
+      json: '20090211'
     ],
 
   artifacts: ["a1", "a2"],
@@ -41,6 +41,5 @@ spec.scmUrl = "git@github.com:linkedin/${spec.name}.git"
  * External dependencies
  */
 spec.external = [
-    json: 'org.json:json:20090211',
-    groovy: "org.codehaus.groovy:groovy:${spec.versions.groovy}"
+    json: "org.json:json:${spec.versions.json}"
 ]

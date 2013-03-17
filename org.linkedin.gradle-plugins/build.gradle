@@ -23,7 +23,7 @@ allRepositories.build.configure(repositories)
 dependencies {
   compile gradleApi()
   compile spec.external.json
-  compile spec.external.groovy
+  compile localGroovy()
 }
 
 sourceSets {

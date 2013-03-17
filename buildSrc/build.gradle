@@ -27,7 +27,7 @@ repositories {
 dependencies {
   compile gradleApi()
   compile 'org.json:json:20090211'
-  compile 'org.codehaus.groovy:groovy-all:2.0.7'
+  compile localGroovy()
 
   testCompile 'junit:junit:4.4'
 }
