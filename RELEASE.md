@@ -1,3 +1,8 @@
+1.6.0 (2012/03/25)
+------------------
+* use of `gradle 1.4`
+* added `gradlew` so that you don't need to install gradle anymore
+
 1.5.0 (2010/12/20)
 ------------------
 * changed `org.linkedin.cmdline` plugin to allow more configurable `resources` (every entry can now be a map)

@@ -130,12 +130,11 @@ as `cmdline`:
 ==============
 In order to compile the code you need
 
-* java 1.6
-* [gradle 0.9](http://www.gradle.org/)
+* java 1.6+
 
 At the top simply run
 
-        gradle test
+        ./gradlew test
 
 which should compile and run all the tests.
 

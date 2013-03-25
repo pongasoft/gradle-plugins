@@ -17,7 +17,7 @@
 spec = [
     name: 'gradle-plugins',
     group: 'org.linkedin',
-    version: '1.5.glu47.2',
+    version: '1.6.0',
 
     versions: [
       json: '20090211'
@@ -27,10 +27,10 @@ spec = [
 
     // information about the build framework itself
     build: [
-        type: "gradle",
+        type: "gradle", // version 1.4
         commands: [
-            "snapshot": "gradlew release",
-            "release": "gradlew -Prelease=true release"
+          "snapshot": "./gradlew <xxx>",
+          "release":  "./gradlew -Prelease=true <xxx>"
         ]
     ]
 ]
