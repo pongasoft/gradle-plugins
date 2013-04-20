@@ -1,3 +1,10 @@
+1.7.0 (2012/04/20)
+------------------
+* use of jdk1.7
+* use of `gradle 1.5`
+* added support for bintray and publish to [bintray](https://bintray.com/pkg/show/general/pongasoft/binaries/gradle-plugins) (jcenter)
+* forked project under [pongasoft/gradle-plugins](https://github.com/pongasoft/gradle-plugins)
+
 1.6.0 (2012/03/25)
 ------------------
 * use of `gradle 1.4`

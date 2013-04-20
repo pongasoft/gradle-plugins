@@ -8,10 +8,10 @@ In order to use the plugins you need to add this to your build script:
 
         buildscript {
           repositories {
-            mavenCentral()
+             mavenRepo(url: 'http://jcenter.bintray.com')
           }
           dependencies {
-            classpath 'org.linkedin:org.linkedin.gradle-plugins:1.5.0'
+            classpath 'org.pongasoft:org.linkedin.gradle-plugins:1.7.0'
           }
         }
 
@@ -25,14 +25,17 @@ build) in the following files (values read last overrides previous values) and m
 to all gradle build files as a `userConfig` object (instance of `groovy.util.ConfigObject`). 
 Check [groovy.util.ConfigSlurper](http://groovy.codehaus.org/gapi/groovy/util/ConfigSlurper.html) for details on the syntax.
 
-        ./userConfig.properties
-        ./userConfig-${project.name}.properties
-        ${user.home}/.org.linkedin/userConfig.properties
-        ${user.home}/.org.linkedin/userConfig-${project.name}.properties
-        ${user.home}/.gradle/userConfig.properties
-        ${user.home}/.gradle/userConfig-${project.name}.properties
-        ${user.home}/.userConfig.properties
-        ${user.home}/.userConfig-${project.name}.properties
+        userConfig.properties
+        userConfig-${project.group}.properties
+        userConfig-${project.name}.properties
+        userConfig-${project.group}-${project.name}.properties
+
+Those files are looked into the following folders:
+
+        ./${filename}
+        ${user.home}/.${project.group}/${filename}
+        ${user.home}/.gradle/${filename}
+        ${user.home}/.${filename}
 
 You can provide your own location by using `-PuserConfig.properties=...` (this will override the
 entire list).
@@ -45,7 +48,7 @@ This plugin should be used only in the root project when doing a multi project b
 `project-spec.json`) and makes it available in all build files as a `spec` object (instance of
 `java.util.Map`). This plugin automatically handles `spec.version` in this fashion: always force
 snapshot mode (meaning version ends with `-SNAPSHOT`) unless `-Prelease=true` is provided when
-running the build. See an [example](https://github.com/linkedin/gradle-plugins/blob/master/project-spec.groovy) of 
+running the build. See an [example](https://github.com/pongasoft/gradle-plugins/blob/master/project-spec.groovy) of
 this file and how it is being used in this project itself!
 
 3.3. `org.linkedin.repository`
@@ -54,21 +57,81 @@ this file and how it is being used in this project itself!
 and override it with your own defaults (for example if you do not want to use maven central). In a
 similar fashion to the `org.linkedin.userConfig` plugin, it reads an optional set of files (values
 read last overrides previous values) and makes it available to all build files as a
-`allRepositories` object (instance of [org.linkedin.gradle.core.RepositoryHandlerContainer](https://github.com/linkedin/gradle-plugins/blob/master/buildSrc/src/main/groovy/org/linkedin/gradle/core/RepositoryHandlerContainer.groovy)).
+`allRepositories` object (instance of [org.linkedin.gradle.core.RepositoryPluginExtension](https://github.com/pongasoft/gradle-plugins/blob/master/buildSrc/src/main/groovy/org/linkedin/gradle/core/RepositoryPluginExtension.groovy)).
 
-        ./repositories.gradle
-        ./repositories-${project.name}.gradle
-        ${user.home}/.org.linkedin/repositories.gradle
-        ${user.home}/.org.linkedin/repositories-${project.name}.gradle
-        ${user.home}/.gradle/repositories.gradle
-        ${user.home}/.gradle/repositories-${project.name}.gradle
-        ${user.home}/.repositories.gradle
-        ${user.home}/.repositories-${project.name}.gradle
+        repositories.gradle
+        repositories-${project.group}.gradle
+        repositories-${project.rootProject.name}.gradle
+        repositories-${project.name}.gradle
+        repositories-${project.group}-${project.name}.gradle
+        repositories-${project.rootProject.name}-${project.group}.gradle
+        repositories-${project.rootProject.name}-${project.name}.gradle
+        repositories-${project.rootProject.name}-${project.group}-${project.name}.gradle
 
-You can provide your own location by using `-Prepositories.gradle=...` (this will override the 
+Those files are looked into the following folders:
+
+        ${project.rootProject.projectDir}/${filename} // if different from .
+        ./${filename}
+        ${user.home}/.${project.group}/${filename}
+        ${user.home}/.gradle/${filename}
+        ${user.home}/.${filename}
+
+You can provide your own location by using `-Prepositories.gradle=...` (this will override the
 entire list).
 
-This plugin should be used only in the root project when doing a multi project build.
+This plugin can be used only in the root project when doing a multi project build. But if you want
+to access `project` specific values, then you need to apply it in each sub projects
+
+You can define any repository name and they are made available into any build script:
+
+        buildscript {
+          allRepositories.buildscript.configure()
+        }
+
+        allRepositories.build.configure()
+
+
+This plugin supports bintray by using the syntax `allRepositories.bintray.<xxx>` (for publishing)
+and can use `org.linkedin.spec` and `org.linkedin.userConfig` to configure it (typically
+your `bintray.apiKey` would live in your `${user.home}/.userConfig.properties` file and the rest
+of the configuration in `project-spec.groovy`). If the `apiKey` is not found, then it will be
+prompted! This plugin adds the `bintray` extension for easy configurations:
+
+        allRepositories.build = {
+          bintray.jcenter()
+        }
+
+        def pomConfig = {
+          // ...
+        }
+
+        allRepositories.bintray.binaries = bintray.binaries.mavenRepo {
+          pom.whenConfigured(pomConfig)
+        }
+
+The `binaries` repository gets configured this way in `project-spec.groovy:
+
+        spec.bintray = [
+          apiBaseUrl: 'https://bintray.com/api/v1',
+          username: 'yan',
+          pkgOrganization: 'pongasoft',
+          repositories: [
+            binaries: [
+              pkgRepository: 'binaries',
+              pkgName: spec.name
+            ],
+        ]
+
+The `bintray` extension is configured this way for any undefined property:
+
+        apiBaseUrl -> 'https://bintray.com/api/v1'
+        username -> System.getProperty("user.name")
+        apiKey -> prompted on the command line
+        pkgOrganization -> username
+        pkgRepository -> project.rootProject.group
+        pkgName -> project.rootProject.name
+
+Check the `repositories.gradle` file that comes with this project for examples.
 
 3.4 `org.linkedin.release`
 --------------------------
@@ -84,8 +147,15 @@ using the `org.linkedin.repository` plugin with the following values:
         allRepositories.publish -> for publish
         allRepositories.snapshotPublish -> for publish of snapshots
 
-See [repositories.gradle](https://github.com/linkedin/gradle-plugins/blob/master/repositories.gradle) 
+See [repositories.gradle](https://github.com/pongasoft/gradle-plugins/blob/master/repositories.gradle)
 for an example of configuration.
+
+The plugin adds a `release` extension which allows you to change which repository gets used on a
+per project basis:
+
+        release  {
+          publish = 'bintray.distributions'
+        }
 
 This plugin is used in every project that needs to be released.
 
@@ -112,7 +182,7 @@ as executables.
 All files under `src/cmdline/resources` are also processed through a replacement token plugin if
 you provide replacement tokens.
 
-This plugin is highly configurable through the [CmdLinePluginConvention](https://github.com/linkedin/gradle-plugins/blob/master/buildSrc/src/main/groovy/org/linkedin/gradle/plugins/CmdLinePlugin.groovy) 
+This plugin is highly configurable through the [CmdLinePluginConvention](https://github.com/pongasoft/gradle-plugins/blob/master/buildSrc/src/main/groovy/org/linkedin/gradle/plugins/CmdLinePlugin.groovy)
 available in the build file
 as `cmdline`:
 
@@ -130,7 +200,7 @@ as `cmdline`:
 ==============
 In order to compile the code you need
 
-* java 1.6+
+* java 1.7+
 
 At the top simply run
 
