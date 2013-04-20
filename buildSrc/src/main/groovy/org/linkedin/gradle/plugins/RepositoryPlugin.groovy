@@ -49,11 +49,15 @@ class RepositoryPlugin implements Plugin<Project>
       allRepositories = new RepositoryPluginExtension(container)
     }
 
-    addBintrayExtension(project)
-
     def filesToLoad = Utils.getFilesToLoad(project, 'repositories', 'gradle')
 
     filesToLoad.each { loadRepositoryFile(project, it) }
+
+    def bintrayRepositories = container.all.keySet()
+    bintrayRepositories = bintrayRepositories.findAll { it.startsWith('bintray.')}
+    bintrayRepositories = bintrayRepositories.collect { it - 'bintray.' }
+
+    addBintrayExtension(project, bintrayRepositories)
   }
 
   def loadRepositoryFile(Project project, File repositoryFile)
@@ -65,9 +69,9 @@ class RepositoryPlugin implements Plugin<Project>
   /**
    * Add bintray extension based on whether bintray is used at all
    */
-  protected void addBintrayExtension(Project project)
+  protected void addBintrayExtension(Project project, Collection<String> bintrayRepositories)
   {
-    def repositories = [] as Set
+    def repositories = new HashSet<String>(bintrayRepositories)
 
     // collect the names of the repositories (used in repositories.gradle to publish)
     // this is usually defined outside the project and allow for overrides
@@ -85,24 +89,22 @@ class RepositoryPlugin implements Plugin<Project>
     def rootProperties = [:]
 
     rootProperties.apiBaseUrl =
-      Utils.getOptionalConfigProperty(project, 'bintray.apiBaseUrl', "https://bintray.com/api/v1")
+      Utils.getOptionalConfigProperty(project, 'bintray.apiBaseUrl', null, "https://bintray.com/api/v1")
     rootProperties.username =
-      Utils.getOptionalConfigProperty(project, 'bintray.username', System.getProperty("user.name"))
+      Utils.getOptionalConfigProperty(project, 'bintray.username', null, System.getProperty("user.name"))
     rootProperties.apiKey =
-      Utils.getOptionalConfigProperty(project, 'bintray.apiKey', null)
+      Utils.getOptionalConfigProperty(project, 'bintray.apiKey', null, null)
     rootProperties.pkgOrganization =
-      Utils.getOptionalConfigProperty(project, 'bintray.pkgOrganization', rootProperties.username)
+      Utils.getOptionalConfigProperty(project, 'bintray.pkgOrganization', null, rootProperties.username)
     rootProperties.pkgRepository =
-      Utils.getOptionalConfigProperty(project, 'bintray.pkgRepository', project.group)
+      Utils.getOptionalConfigProperty(project, 'bintray.pkgRepository', null, project.group)
     rootProperties.pkgName =
-      Utils.getOptionalConfigProperty(project, 'bintray.pkgName', project.rootProject.name)
+      Utils.getOptionalConfigProperty(project, 'bintray.pkgName', null, project.rootProject.name)
     rootProperties.pkgVersion = project.version
 
     // add 'bintray' extension
     def bintrayExtension =
-      project.extensions.create("bintray", BintrayRepositoryExtension, 'root', rootProperties)
-
-    def apiKey = rootProperties.apiKey
+      project.extensions.create("bintray", BintrayRepositoryExtension, 'root', rootProperties, null)
 
     def repositoryExtensions = []
 
@@ -110,22 +112,22 @@ class RepositoryPlugin implements Plugin<Project>
     repositories.each { name ->
       def repositoryProperties = rootProperties.keySet().collectEntries { k ->
         def propertyName = "bintray.repositories.${name}.${k}"
-        [k, Utils.getOptionalConfigProperty(project,
-                                            propertyName,
-                                            rootProperties[k])]
-      }
-
-      if(!repositoryProperties.apiKey)
-      {
-        apiKey =  promptForApiKey(project)
-        rootProperties.apiKey = apiKey
-        repositoryProperties.apiKey = apiKey
+        [k, Utils.getOptionalConfigProperty(project, propertyName)]
       }
 
       repositoryExtensions << bintrayExtension.extensions.create(name,
                                                                  BintrayRepositoryExtension,
                                                                  name,
-                                                                 repositoryProperties)
+                                                                 repositoryProperties,
+                                                                 bintrayExtension)
+    }
+
+    // check that the api key is defined!
+    repositoryExtensions.each { BintrayRepositoryExtension extension ->
+      if(!extension.apiKey)
+      {
+        bintrayExtension.apiKey = promptForApiKey(project)
+      }
     }
 
     // add a task to create the (missing) packages
@@ -143,6 +145,7 @@ class RepositoryPlugin implements Plugin<Project>
     {
       BINTRAY_API_KEY = Utils.getConfigProperty(project,
                                                 "bintray.apiKey",
+                                                null,
                                                 MissingConfigPropertyAction.PROMPT_PASSWORD)
     }
 
@@ -163,7 +166,7 @@ class RepositoryPlugin implements Plugin<Project>
         http = createHttpBuilder(extension)
         http.request(POST, JSON) {
           uri.path = "${uri.path}/packages/${extension.pkgOrganization}/${extension.pkgRepository}".toString()
-          body = [name: extension.pkgName, desc: 'auto', desc_url: 'auto']
+          body = [name: extension.pkgName, desc: 'tbd', desc_url: 'auto']
 
           response.success = { resp ->
             project.logger.info("Successfully created package: [/${path}]")
@@ -202,9 +205,12 @@ class BintrayRepositoryExtension
   def pkgName
   def pkgVersion
 
-  BintrayRepositoryExtension(String name, Map config)
+  private BintrayRepositoryExtension _parent
+
+  BintrayRepositoryExtension(String name, Map config, BintrayRepositoryExtension parent)
   {
     this.name = name
+    _parent = parent
 
     apiBaseUrl = config.apiBaseUrl
     username = config.username
@@ -215,27 +221,98 @@ class BintrayRepositoryExtension
     pkgVersion = config.pkgVersion
 
   }
+
+  String getName()
+  {
+    return name ?: _parent?.getName()
+  }
+
+  def getApiBaseUrl()
+  {
+    return apiBaseUrl ?: _parent?.getApiBaseUrl()
+  }
+
+  def getUsername()
+  {
+    return username ?: _parent?.getUsername()
+  }
+
+  def getApiKey()
+  {
+    return apiKey ?: _parent?.getApiKey()
+  }
+
+  def getPkgOrganization()
+  {
+    return pkgOrganization ?: _parent?.getPkgOrganization()
+  }
+
+  def getPkgRepository()
+  {
+    return pkgRepository ?: _parent?.getPkgRepository()
+  }
+
+  def getPkgName()
+  {
+    return pkgName ?: _parent?.getPkgName()
+  }
+
+  def getPkgVersion()
+  {
+    return pkgVersion ?: _parent?.getPkgVersion()
+  }
+
+  @Override
+  public String toString()
+  {
+    final StringBuilder sb = new StringBuilder("BintrayRepositoryExtension{");
+    sb.append("name='").append(getName()).append('\'');
+    sb.append(", apiBaseUrl=").append(getApiBaseUrl());
+    sb.append(", username=").append(getUsername());
+    sb.append(", apiKey=").append("x" * getApiKey()?.size());
+    sb.append(", pkgOrganization=").append(getPkgOrganization());
+    sb.append(", pkgRepository=").append(getPkgRepository());
+    sb.append(", pkgName=").append(getPkgName());
+    sb.append(", pkgVersion=").append(getPkgVersion());
+    sb.append('}');
+    return sb.toString();
+  }
 }
 
 class RepositoryPluginExtension
 {
   private final RepositoryHandlerContainerImpl _container
+  private final _rootName
 
-  RepositoryPluginExtension(RepositoryHandlerContainerImpl container)
+  RepositoryPluginExtension(RepositoryHandlerContainerImpl container, String rootName = null)
   {
-    this._container = container
+    _container = container
+    _rootName = rootName
+  }
+
+  private String computeName(String name)
+  {
+    if(_rootName)
+      return "${_rootName}.${name}".toString()
+    else
+      return name
+  }
+
+  RepositoryPluginExtension getBintray()
+  {
+    return new RepositoryPluginExtension(_container, 'bintray')
   }
 
   // handle allRepositories.<name> << { } => add another configuration
   // handle allRepositories.<name>.configure()
   def propertyMissing(String name)
   {
-    _container.find(name)
+    _container.find(computeName(name))
   }
 
   // handle allRepositories.<name> = { } => value can be a closure, another repo or a string
   def propertyMissing(String name, value)
   {
-    _container.setConfiguration(name, value)
+    _container.setConfiguration(computeName(name), value)
   }
 }

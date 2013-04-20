@@ -18,7 +18,7 @@ apply plugin: 'org.linkedin.cmdline'
 apply plugin: 'org.linkedin.release'
 
 release  {
-  publish = 'bintrayDistributions'
+  publish = 'bintray.distributions'
 }
 
 

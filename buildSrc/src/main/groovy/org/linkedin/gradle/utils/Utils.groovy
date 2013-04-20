@@ -100,8 +100,8 @@ class Utils
    */
   static def getOptionalConfigProperty(Project project,
                                        String dottedConfigPropertyName,
-                                       def allVariants = null,
-                                       def defaultConfigProperty)
+                                       Collection<String> allVariants = null,
+                                       def defaultConfigProperty = null)
   {
     getConfigProperty(project,
                       dottedConfigPropertyName,
@@ -119,7 +119,7 @@ class Utils
    */
   static def getConfigProperty(Project project,
                                String dottedConfigPropertyName,
-                               def allVariants = null,
+                               Collection<String> allVariants = null,
                                MissingConfigPropertyAction action = MissingConfigPropertyAction.THROW)
   {
     if(!dottedConfigPropertyName)

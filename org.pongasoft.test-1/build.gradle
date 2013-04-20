@@ -17,4 +17,6 @@
 apply plugin: 'java'
 apply plugin: 'org.linkedin.release'
 
+sourceCompatibility = spec.jdk
+targetCompatibility = spec.jdk
 

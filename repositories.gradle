@@ -80,7 +80,7 @@ allRepositories.snapshotPublish = {
 /**
  * Bintray binaries
  */
-allRepositories.bintrayBinaries = {
+allRepositories.bintray.binaries = {
   def repo = bintray.binaries
   mavenDeployer {
     repository(url: "${repo.apiBaseUrl}/maven/${repo.pkgOrganization}/${repo.pkgRepository}/${repo.pkgName}") {
@@ -94,7 +94,7 @@ allRepositories.bintrayBinaries = {
  * Bintray distributions (note that there are no distributions in this project... used for testing
  * only (see test-2)
  */
-//allRepositories.bintrayDistributions = {
+//allRepositories.bintray.distributions = {
 //  def repo = bintray.distributions
 //  ivy {
 //    url = "${repo.apiBaseUrl}/content/${repo.pkgOrganization}/${repo.pkgRepository}/${repo.pkgName}/${repo.pkgVersion}"
@@ -109,5 +109,5 @@ allRepositories.bintrayBinaries = {
 //  }
 //}
 
-// by default all modules are published into bintrayBinaries (can be overriden in a given module)
-allRepositories.publish = allRepositories.bintrayBinaries
+// by default all modules are published into bintray.binaries (can be overriden in a given module)
+allRepositories.publish = allRepositories.bintray.binaries
