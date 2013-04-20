@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Portions Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,7 +44,7 @@ import org.gradle.api.plugins.BasePlugin
  * the 'releaseMaster' configuration or to a new configuration and make 'releaseMaster' extends
  * from it.
  *
- * By convention ({@link ReleasePluginConvention#releaseConfigurations}) 'releaseMaster' extends
+ * By convention ({@link ReleasePluginExtension#releaseConfigurations}) 'releaseMaster' extends
  * from 'archives'.
  *
  * @author ypujante@linkedin.com */
@@ -56,14 +57,12 @@ class ReleasePlugin implements Plugin<Project>
   {
     project.getPlugins().apply(BasePlugin.class);
 
-    if(!project.rootProject.plugins.hasPlugin('org.linkedin.repository'))
+    if(!project.plugins.hasPlugin('org.linkedin.repository'))
     {
-      project.rootProject.apply plugin: RepositoryPlugin
+      project.apply plugin: RepositoryPlugin
     }
 
-    def convention = new ReleasePluginConvention()
-
-    project.convention.plugins.release = convention
+    def extension = project.extensions.create("release", ReleasePluginExtension)
 
     // creating the configurations
     findOrAddConfiguration(project, RELEASE_MASTER_CONFIGURATION)
@@ -74,35 +73,45 @@ class ReleasePlugin implements Plugin<Project>
      */
     project.afterEvaluate {
 
-      convention.releaseConfigurations.each { String configurationName ->
+      extension.releaseConfigurations.each { String configurationName ->
         addToReleaseMaster(project, configurationName)
       }
 
       def releaseRepositoryName =
-        project.version.endsWith('-SNAPSHOT') ? 'snapshotRelease' : 'release'
+        project.version.endsWith('-SNAPSHOT') ? extension.snapshotRelease : extension.release
       def publishRepositoryName =
-        project.version.endsWith('-SNAPSHOT') ? 'snapshotPublish' : 'publish'
+        project.version.endsWith('-SNAPSHOT') ? extension.snapshotPublish : extension.publish
 
+      // handling release
       project.uploadReleaseMaster {
-        project.allRepositories.find(releaseRepositoryName)?.configure(repositories)
+        def releaseRepo = RepositoryPlugin.findRepository(project, releaseRepositoryName)
+        if(releaseRepo)
+          releaseRepo.configure(repositories)
+        else
+          project.logger.warn("Could not locate configuration for release [${releaseRepositoryName}]")
       }
 
+      // handling publish
       project.uploadPublishMaster {
-        project.allRepositories.find(publishRepositoryName)?.configure(repositories)
+        def publishRepo = RepositoryPlugin.findRepository(project, publishRepositoryName)
+        if(publishRepo)
+          publishRepo.configure(repositories)
+        else
+          project.logger.warn("Could not locate configuration for publish [${publishRepositoryName}]")
       }
 
       /********************************************************
        * task: release
        ********************************************************/
       project.task([dependsOn: 'uploadReleaseMaster',
-                   description: "Releases in a repository [${releaseRepositoryName}]"],
+                   description: "Releases in a releaseRepo [${releaseRepositoryName}]"],
                    'release')
 
       /********************************************************
        * task: publish
        ********************************************************/
       project.task([dependsOn: 'uploadPublishMaster',
-                   description: "Publishes in a repository [${publishRepositoryName}]"], 
+                   description: "Publishes in a releaseRepo [${publishRepositoryName}]"],
                    'publish')
 
       boolean hasSources = false
@@ -146,9 +155,9 @@ class ReleasePlugin implements Plugin<Project>
       }
 
       [
-          'sourcesJar': convention.sourcesConfigurations,
-          'javadocJar': convention.javadocConfigurations,
-          'groovydocJar': convention.groovydocConfigurations
+          'sourcesJar': extension.sourcesConfigurations,
+          'javadocJar': extension.javadocConfigurations,
+          'groovydocJar': extension.groovydocConfigurations
       ].each { taskName, configurations ->
         if(project.tasks.findByName(taskName))
         {
@@ -172,13 +181,13 @@ class ReleasePlugin implements Plugin<Project>
     if(!configuration)
       return null
 
-    def mrc = project.configurations.findByName(ReleasePlugin.RELEASE_MASTER_CONFIGURATION)
+    def mrc = project.configurations.findByName(RELEASE_MASTER_CONFIGURATION)
 
     Configuration ac = null
     if(mrc)
     {
       (mrc, ac) = addExtendsFrom(project,
-                                 ReleasePlugin.RELEASE_MASTER_CONFIGURATION,
+                                 RELEASE_MASTER_CONFIGURATION,
                                  configuration)
     }
 
@@ -218,16 +227,15 @@ class ReleasePlugin implements Plugin<Project>
 
 }
 
-class ReleasePluginConvention
+class ReleasePluginExtension
 {
   def releaseConfigurations = ['archives'] as Set
   def sourcesConfigurations = [sources: []]
   def javadocConfigurations = [javadoc: ['docs']]
   def groovydocConfigurations = [groovydoc: ['docs']]
 
-  def release(Closure closure)
-  {
-    closure.delegate = this
-    closure()
-  }
+  String snapshotRelease = 'snapshotRelease'
+  String release = 'release'
+  String snapshotPublish = 'snapshotPublish'
+  String publish = 'publish'
 }

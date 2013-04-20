@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Portions Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +17,7 @@
 
 package org.linkedin.gradle.core
 
+import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.util.ConfigureUtil
 
@@ -23,11 +25,20 @@ import org.gradle.util.ConfigureUtil
  * @author ypujante@linkedin.com */
 class RepositoryHandlerConfigurationImpl implements RepositoryHandlerConfiguration
 {
+  String name
+  Project project
   RepositoryHandlerContainer container
 
   def configurations = []
 
-  def RepositoryHandler configure(RepositoryHandler repository)
+  @Override
+  RepositoryHandler configure()
+  {
+    configure(project.repositories)
+  }
+
+  @Override
+  RepositoryHandler configure(RepositoryHandler repository)
   {
     configurations?.each { c ->
       switch(c)
@@ -37,7 +48,7 @@ class RepositoryHandlerConfigurationImpl implements RepositoryHandlerConfigurati
           break;
 
         case { it instanceof String }:
-          container.findConfiguration(c)?.configure(repository)
+          container.find(c as String)?.configure(repository)
           break;
 
         case { it instanceof RepositoryHandlerConfiguration }:

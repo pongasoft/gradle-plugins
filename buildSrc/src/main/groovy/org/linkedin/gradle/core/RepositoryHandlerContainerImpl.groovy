@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Portions Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,12 +17,13 @@
 
 package org.linkedin.gradle.core
 
-import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.Project
 
 /**
  * @author ypujante@linkedin.com */
 class RepositoryHandlerContainerImpl implements RepositoryHandlerContainer
 {
+  Project project
   def repositoryHandlerFactory
 
   Map<String, RepositoryHandlerConfiguration> repositories = [:]
@@ -41,126 +43,30 @@ class RepositoryHandlerContainerImpl implements RepositoryHandlerContainer
     return repositories[name]
   }
 
-  /************* build **************/
-  def RepositoryHandlerConfiguration getBuild()
+  @Override
+  RepositoryHandlerConfiguration getConfiguration(String name)
   {
-    getOrCreate('build')
+    getOrCreate(name)
   }
 
-  def RepositoryHandlerConfiguration build(Object configureObject)
+  @Override
+  RepositoryHandlerConfiguration addConfiguration(String name, Object configureObject)
   {
-    doConfigure('build', false, configureObject)
+    doConfigure(name, false, configureObject)
   }
 
-  def RepositoryHandlerConfiguration setBuild(Object configureObject)
+  @Override
+  RepositoryHandlerConfiguration setConfiguration(String name, Object configureObject)
   {
-    doConfigure('build', true, configureObject)
-  }
-
-  /************* buildScript **************/
-  def RepositoryHandlerConfiguration getBuildscript()
-  {
-    getOrCreate('buildscript')
-  }
-
-  def RepositoryHandlerConfiguration buildscript(Object configureObject)
-  {
-    doConfigure('buildscript', false, configureObject)
-  }
-
-  def RepositoryHandlerConfiguration setBuildscript(Object configureObject)
-  {
-    doConfigure('buildscript', true, configureObject)
-  }
-
-  /************* release **************/
-  def RepositoryHandlerConfiguration getRelease()
-  {
-    getOrCreate('release')
-  }
-
-  def RepositoryHandlerConfiguration release(Object configureObject)
-  {
-    doConfigure('release', false, configureObject)
-  }
-
-  def RepositoryHandlerConfiguration setRelease(Object configureObject)
-  {
-    doConfigure('release', true, configureObject)
-  }
-
-  /************* snapshotRelease **************/
-  def RepositoryHandlerConfiguration getSnapshotRelease()
-  {
-    getOrCreate('snapshotRelease')
-  }
-
-  def RepositoryHandlerConfiguration snapshotRelease(Object configureObject)
-  {
-    doConfigure('snapshotRelease', false, configureObject)
-  }
-
-  def RepositoryHandlerConfiguration setSnapshotRelease(Object configureObject)
-  {
-    doConfigure('snapshotRelease', true, configureObject)
-  }
-
-  /************* publish **************/
-  def RepositoryHandlerConfiguration getPublish()
-  {
-    getOrCreate('publish')
-  }
-
-  def RepositoryHandlerConfiguration publish(Object configureObject)
-  {
-    doConfigure('publish', false, configureObject)
-  }
-
-  def RepositoryHandlerConfiguration setPublish(Object configureObject)
-  {
-    doConfigure('publish', true, configureObject)
-  }
-
-  /************* snapshotPublish **************/
-  def RepositoryHandlerConfiguration getSnapshotPublish()
-  {
-    getOrCreate('snapshotPublish')
-  }
-
-  def RepositoryHandlerConfiguration snapshotPublish(Object configureObject)
-  {
-    doConfigure('snapshotPublish', false, configureObject)
-  }
-
-  def RepositoryHandlerConfiguration setSnapshotPublish(Object configureObject)
-  {
-    doConfigure('snapshotPublish', true, configureObject)
-  }
-
-  def RepositoryHandler configure(RepositoryHandler repository,
-                                  Object repositoryHandlerConfiguration)
-  {
-    RepositoryHandlerConfiguration config = null
-    switch(repositoryHandlerConfiguration)
-    {
-      case { it instanceof String }:
-        config = getOrCreate(repositoryHandlerConfiguration as String)
-        break;
-
-      case { it instanceof RepositoryHandlerConfiguration }:
-        config = repositoryHandlerConfiguration
-        break;
-
-      default:
-        throw new IllegalArgumentException("invalid type ${repository.class.name}")
-    }
-    return config.configure(repository)
+    doConfigure(name, true, configureObject)
   }
 
   private RepositoryHandlerConfigurationImpl getOrCreate(String name)
   {
     if(!repositories[name])
-      repositories[name] = new RepositoryHandlerConfigurationImpl(container: this)
+      repositories[name] = new RepositoryHandlerConfigurationImpl(name: name,
+                                                                  project: project,
+                                                                  container: this)
     return repositories[name]
   }
 

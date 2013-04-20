@@ -1,6 +1,6 @@
-
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Portions Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,7 +25,7 @@ allRepositories.build = {
 def topReleaseDir = userConfig.top.release.dir ?: "${topBuildDir}/release"
 
 /**
- * Repositories for release
+ * Repositories for release (local)
  */
 allRepositories.snapshotRelease = {
   add(new org.apache.ivy.plugins.resolver.FileSystemResolver()) {
@@ -36,42 +36,78 @@ allRepositories.snapshotRelease = {
   }
 }
 
+// non snapshot releases in the same repo
 allRepositories.release = allRepositories.snapshotRelease
 
 def topPublishDir = userConfig.top.publish.dir ?: "${topBuildDir}/publish"
 
-/**
- * Repositories for publish
- */
-allRepositories.snapshotPublish = {
-  mavenDeployer {
-    repository(url: "file://localhost${topPublishDir}")
-    pom.whenConfigured { pomToConfigure ->
-      pomToConfigure.project {
-        name project.name
-        description 'A useful set of gradle plugins'
-        url 'http://github.com/linkedin/gradle-plugins'
-        licenses {
-          license {
-            name 'The Apache Software License, Version 2.0'
-            url 'http://www.apache.org/licenses/LICENSE-2.0'
-          }
-        }
-        developers {
-          developer {
-            id 'ypujante'
-            name 'Yan Pujante'
-            email 'yan@pongasoft.com'
-          }
-        }
-        scm {
-          connection "scm:git:${spec.scmUrl}"
-          developerConnection "scm:git:${spec.scmUrl}"
-          url spec.scmUrl
-        }
+def pomConfig = { pomToConfigure ->
+  pomToConfigure.project {
+    name project.name
+    description 'A useful set of gradle plugins'
+    url 'http://github.com/linkedin/gradle-plugins'
+    licenses {
+      license {
+        name 'The Apache Software License, Version 2.0'
+        url 'http://www.apache.org/licenses/LICENSE-2.0'
       }
+    }
+    developers {
+      developer {
+        id 'ypujante'
+        name 'Yan Pujante'
+        email 'yan@pongasoft.com'
+      }
+    }
+    scm {
+      connection "scm:git:${spec.scmUrl}"
+      developerConnection "scm:git:${spec.scmUrl}"
+      url spec.scmUrl
     }
   }
 }
 
-allRepositories.publish = allRepositories.snapshotPublish
+/**
+ * Repositories for publish (snapshots are published locally)
+ */
+allRepositories.snapshotPublish = {
+  mavenDeployer {
+    repository(url: "file://localhost${topPublishDir}")
+    pom.whenConfigured(pomConfig)
+  }
+}
+
+/**
+ * Bintray binaries
+ */
+allRepositories.bintrayBinaries = {
+  def repo = bintray.binaries
+  mavenDeployer {
+    repository(url: "${repo.apiBaseUrl}/maven/${repo.pkgOrganization}/${repo.pkgRepository}/${repo.pkgName}") {
+      authentication(userName: repo.username.toString(), password: repo.apiKey.toString())
+    }
+    pom.whenConfigured(pomConfig)
+  }
+}
+
+/**
+ * Bintray distributions (note that there are no distributions in this project... used for testing
+ * only (see test-2)
+ */
+//allRepositories.bintrayDistributions = {
+//  def repo = bintray.distributions
+//  ivy {
+//    url = "${repo.apiBaseUrl}/content/${repo.pkgOrganization}/${repo.pkgRepository}/${repo.pkgName}/${repo.pkgVersion}"
+//    credentials {
+//      username = repo.username.toString()
+//      password = repo.apiKey.toString()
+//    }
+//    layout "pattern", {
+//      artifact "[artifact]-[revision](-[classifier])(.[ext])"
+//      ivy "ivy-[revision].xml"
+//    }
+//  }
+//}
+
+// by default all modules are published into bintrayBinaries (can be overriden in a given module)
+allRepositories.publish = allRepositories.bintrayBinaries

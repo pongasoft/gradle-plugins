@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2010-2010 LinkedIn, Inc
- * Portions Copyright (c) 2013 Yan Pujante
+ * Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,22 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package test.gradle.plugins;
 
-apply plugin: 'groovy'
+/**
+ * @author yan@pongasoft.com
+ */
+public class Main
+{
+  public static void main(String[] args)
+  {
+    System.out.println("Hello World (test-1)");
+  }
 
-sourceCompatibility = '1.6'
-targetCompatibility = '1.6'
-
-repositories {
-  mavenRepo(url: 'http://jcenter.bintray.com')
-  mavenCentral()
-}
-
-dependencies {
-  compile gradleApi()
-  compile 'org.json:json:20090211'
-  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.6'
-  compile localGroovy()
-
-  testCompile 'junit:junit:4.4'
+  /**
+   * Constructor
+   */
+  public Main()
+  {
+  }
 }

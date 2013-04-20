@@ -28,8 +28,6 @@ ext {
   topBuildDir = userConfig.top.build.dir ?: "${rootDir}/out/build"
 }
 
-apply plugin: 'org.linkedin.repository'
-
 allprojects {
   apply plugin: 'idea'
   group = spec.group
@@ -45,9 +43,11 @@ idea.project {
 }
 
 subprojects { p ->
+  apply plugin: 'maven'
+  apply plugin: 'org.linkedin.repository'
   buildDir = "${topBuildDir}${project.path.replace(':','/')}".toString()
 }
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '1.4'
+  gradleVersion = '1.5'
 }

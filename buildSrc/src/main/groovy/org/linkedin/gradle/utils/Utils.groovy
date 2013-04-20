@@ -18,6 +18,7 @@
 package org.linkedin.gradle.utils
 
 import org.gradle.api.Project
+import org.gradle.api.resources.MissingResourceException
 
 /**
  * @author ypujante@linkedin.com */
@@ -36,35 +37,200 @@ class Utils
     def homeDir = new File(System.getProperty('user.home'))
 
     def names = [
-      "${baseFilename}.${extension}",
-      "${baseFilename}-${project.group}.${extension}",
-      "${baseFilename}-${project.name}.${extension}",
-      "${baseFilename}-${project.group}-${project.name}.${extension}"
-    ]
+      "${baseFilename}.${extension}"
+      ]
+
+    names.addAll(computePropertyNamesFromLessToMoreSpecific(project).collect {
+      "${baseFilename}-${it}.${extension}" }
+    )
 
     def filesToTry = []
 
-    // 1st local files
+    // 1. (root) local files
+    if(project.rootProject != project)
+    {
+      names.each {
+        filesToTry << project.rootProject.file(it)
+      }
+    }
+
+    // 2. local files
     names.each {
       filesToTry << project.file(it)
     }
 
-    // 2nd $HOME/.org.linkedin/*
+    // 3. $HOME/.org.linkedin/*
     names.each {
       filesToTry << new File(homeDir, ".org.linkedin/${it}")
     }
 
-    // 3rd $HOME/.gradle/*
+    // 4. $HOME/.gradle/*
     names.each {
       filesToTry << new File(homeDir, ".gradle/${it}")
     }
 
-    // 4th $HOME/.*
+    // 5. $HOME/.*
     names.each {
       filesToTry << new File(homeDir, ".${it}")
     }
 
     return filesToTry.findAll { it.exists() }
+  }
+
+  static def computePropertyNamesFromLessToMoreSpecific(Project project)
+  {
+    [
+      "${project.group}",
+      "${project.rootProject.name}",
+      "${project.name}",
+      "${project.group}-${project.name}",
+      "${project.rootProject.name}-${project.group}",
+      "${project.rootProject.name}-${project.name}",
+      "${project.rootProject.name}-${project.group}-${project.name}"
+    ]
+  }
+
+  /**
+   * Try to locate the config property using a dotted name (ex: top.build.dir). First try
+   * the project, then the userConfig (if present), then the spec object (if present). When the
+   * property is not found, the action specifies how to handle it.
+   *
+   * @param allVariants represent all possible different names for the property
+   * @return the property (can be anything specified)
+   */
+  static def getOptionalConfigProperty(Project project,
+                                       String dottedConfigPropertyName,
+                                       def allVariants = null,
+                                       def defaultConfigProperty)
+  {
+    getConfigProperty(project,
+                      dottedConfigPropertyName,
+                      allVariants,
+                      MissingConfigPropertyAction.NULL) ?: defaultConfigProperty
+  }
+
+  /**
+   * Try to locate the config property using a dotted name (ex: top.build.dir). First try
+   * the project, then the userConfig (if present), then the spec object (if present). When the
+   * property is not found, the action specifies how to handle it.
+   *
+   * @param allVariants represent all possible different names for the property
+   * @return the property (can be anything specified)
+   */
+  static def getConfigProperty(Project project,
+                               String dottedConfigPropertyName,
+                               def allVariants = null,
+                               MissingConfigPropertyAction action = MissingConfigPropertyAction.THROW)
+  {
+    if(!dottedConfigPropertyName)
+      throw new IllegalArgumentException("missing property name")
+
+    if(!allVariants)
+      allVariants = [dottedConfigPropertyName]
+
+    def configProperty = allVariants.findResult { p ->
+      doGetConfigProperty(project, p)
+    }
+
+    if(configProperty != null)
+      return configProperty
+
+    // 4. no property found... handle missing property
+    switch(action)
+    {
+      case MissingConfigPropertyAction.NULL:
+        return null
+
+      case MissingConfigPropertyAction.THROW:
+        throwMissingConfigPropertyException(dottedConfigPropertyName)
+        break // not reached
+
+      case MissingConfigPropertyAction.PROMPT:
+        def cp = System.console()?.readLine("\n====> Please enter ${dottedConfigPropertyName}: ")
+        if(cp == null) // no console...
+          throwMissingConfigPropertyException(dottedConfigPropertyName)
+        return cp
+
+      case MissingConfigPropertyAction.PROMPT_PASSWORD:
+        def cp = System.console()?.readPassword("\n====> Please enter ${dottedConfigPropertyName}: ")
+        if(cp == null) // no console...
+          throwMissingConfigPropertyException(dottedConfigPropertyName)
+        return cp
+
+      default:
+        throw new RuntimeException('not reached')
+    }
+
+  }
+
+  /**
+   * Try to locate the config property using a dotted name (ex: top.build.dir). First try
+   * the project, then the userConfig (if present), then the spec object (if present). When the
+   * property is not found
+   *
+   * @return the property (can be anything specified)
+   * @return <code>null</code> if not found
+   */
+  private static def doGetConfigProperty(Project project,
+                                         String dottedConfigPropertyName)
+  {
+    if(!dottedConfigPropertyName)
+      throw new IllegalArgumentException("missing property name")
+
+    // make sure it is a string
+    dottedConfigPropertyName = dottedConfigPropertyName.toString()
+
+    def configPropertyNameParts = dottedConfigPropertyName.split('\\.')
+
+    // 1. we check user config
+    if(project.hasProperty('userConfig'))
+    {
+      def userConfig = project.userConfig
+      def configProperty = userConfig."${dottedConfigPropertyName}"
+      if(configProperty instanceof ConfigObject)
+      {
+        if(configPropertyNameParts.size() > 1)
+        {
+          configProperty = userConfig."${configPropertyNameParts[0]}"
+          configPropertyNameParts[1..-1].each { p ->
+            configProperty = configProperty?."${p}"
+          }
+        }
+      }
+
+      // found the config property => we are done...
+      if(!(configProperty instanceof ConfigObject))
+        return configProperty
+    }
+
+    // 2. we check spec
+    if(project.hasProperty('spec'))
+    {
+      def spec = project.spec
+      def configProperty = spec."${dottedConfigPropertyName}"
+      if(configProperty == null)
+      {
+        if(configPropertyNameParts.size() > 1)
+        {
+          configProperty = spec."${configPropertyNameParts[0]}"
+          configPropertyNameParts[1..-1].each { p ->
+            configProperty = configProperty?."${p}"
+          }
+        }
+
+      }
+
+      // found the config property => we are done...
+      if(configProperty != null)
+        return configProperty
+    }
+
+    return null
+  }
+
+  private static void throwMissingConfigPropertyException(String propertyName)
+  {
+    throw new MissingResourceException("Cannot locate property ${propertyName}: either use userConfig or spec plugin to define it or -P${propertyName}=xxx on the command line")
   }
 
   /**
@@ -143,5 +309,28 @@ class Utils
           flattenedMap[key] = e
       }
     }
+  }
+
+  /**
+   * Converts the string into a boolean value. <code>true</code> or
+   * <code>yes</code> are considered to be <code>true</code>. <code>false</code>
+   * or <code>no</code> are <code>false</code>.
+   *
+   * @param s the string to convert
+   * @return a <code>boolean</code>  */
+  public static boolean convertToBoolean(def s)
+  {
+    if(s == null)
+      return false;
+
+    s = s.toString()
+
+    if(s == "false" || s == "no" || s == "off")
+      return false;
+
+    if(s == "true" || s == "yes" || s == "on")
+      return true;
+
+    throw new IllegalArgumentException("cannot convert ${s} to a boolean")
   }
 }

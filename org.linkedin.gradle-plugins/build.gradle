@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Portions Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,15 +15,15 @@
  * the License.
  */
 
-apply plugin: 'maven'
 apply plugin: 'org.linkedin.release'
 apply plugin: 'groovy'
 
-allRepositories.build.configure(repositories)
+allRepositories.build.configure()
 
 dependencies {
   compile gradleApi()
   compile spec.external.json
+  compile spec.external.httpBuilder
   compile localGroovy()
 }
 

@@ -15,24 +15,24 @@
  * the License.
  */
 spec = [
-    name: 'gradle-plugins',
-    group: 'org.linkedin',
-    version: '1.6.0',
+  name: 'gradle-plugins',
+  group: 'org.pongasoft',
+  version: '1.8.0-RC1',
 
-    versions: [
-      json: '20090211'
-    ],
+  versions: [
+    json: '20090211'
+  ],
 
   artifacts: ["a1", "a2"],
 
-    // information about the build framework itself
-    build: [
-        type: "gradle", // version 1.4
-        commands: [
-          "snapshot": "./gradlew <xxx>",
-          "release":  "./gradlew -Prelease=true <xxx>"
-        ]
+  // information about the build framework itself
+  build: [
+    type: "gradle", // version 1.4
+    commands: [
+      "snapshot": "./gradlew <xxx>",
+      "release": "./gradlew -Prelease=true <xxx>"
     ]
+  ],
 ]
 
 spec.scmUrl = "git@github.com:linkedin/${spec.name}.git"
@@ -41,5 +41,23 @@ spec.scmUrl = "git@github.com:linkedin/${spec.name}.git"
  * External dependencies
  */
 spec.external = [
-    json: "org.json:json:${spec.versions.json}"
+  json: "org.json:json:${spec.versions.json}",
+  httpBuilder: "org.codehaus.groovy.modules.http-builder:http-builder:0.6"
+]
+
+// information about the bintray distribution
+spec.bintray = [
+  apiBaseUrl: 'https://bintray.com/api/v1',
+  username: 'yan',
+  pkgOrganization: 'pongasoft',
+  repositories: [
+    binaries: [
+      pkgRepository: 'binaries',
+      pkgName: spec.name
+    ],
+//    distributions: [
+//      pkgRepository: spec.name,
+//      pkgName: 'releases'
+//    ],
+  ]
 ]
