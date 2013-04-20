@@ -18,6 +18,10 @@
 package org.linkedin.gradle.plugins
 
 import groovyx.net.http.HTTPBuilder
+import org.gradle.api.internal.ClosureBackedAction
+import org.gradle.util.ConfigureUtil
+import org.linkedin.gradle.core.RepositoryHandlerConfigurationImpl
+
 import static groovyx.net.http.ContentType.JSON
 import static groovyx.net.http.Method.GET
 import static groovyx.net.http.Method.POST
@@ -38,8 +42,13 @@ class RepositoryPlugin implements Plugin<Project>
 {
   static def BINTRAY_API_KEY = null
 
+  private Project project
+  private Collection<BintrayRepositoryExtension> repositoryExtensions = []
+
   void apply(Project project)
   {
+    this.project = project
+
     def factory = project.services.get(RepositoryHandler.class)
 
     def container = new RepositoryHandlerContainerImpl(project: project,
@@ -49,42 +58,24 @@ class RepositoryPlugin implements Plugin<Project>
       allRepositories = new RepositoryPluginExtension(container)
     }
 
+    addBintrayRootExtension()
+
     def filesToLoad = Utils.getFilesToLoad(project, 'repositories', 'gradle')
 
-    filesToLoad.each { loadRepositoryFile(project, it) }
-
-    def bintrayRepositories = container.all.keySet()
-    bintrayRepositories = bintrayRepositories.findAll { it.startsWith('bintray.')}
-    bintrayRepositories = bintrayRepositories.collect { it - 'bintray.' }
-
-    addBintrayExtension(project, bintrayRepositories)
+    filesToLoad.each { loadRepositoryFile(it) }
   }
 
-  def loadRepositoryFile(Project project, File repositoryFile)
+  def loadRepositoryFile(File repositoryFile)
   {
     project.apply from: repositoryFile
     project.logger.debug("Loaded ${repositoryFile}.")
   }
 
   /**
-   * Add bintray extension based on whether bintray is used at all
+   * Add bintray extension
    */
-  protected void addBintrayExtension(Project project, Collection<String> bintrayRepositories)
+  protected void addBintrayRootExtension()
   {
-    def repositories = new HashSet<String>(bintrayRepositories)
-
-    // collect the names of the repositories (used in repositories.gradle to publish)
-    // this is usually defined outside the project and allow for overrides
-    if(project.hasProperty('userConfig'))
-    {
-      project.userConfig.bintray?.repositories?.each { k,v -> repositories << k}
-    }
-    // this is usually define in the project itself
-    if(project.hasProperty('spec'))
-    {
-      project.spec.bintray?.repositories?.each { k,v -> repositories << k}
-    }
-
     // set defaults for all properties
     def rootProperties = [:]
 
@@ -97,46 +88,59 @@ class RepositoryPlugin implements Plugin<Project>
     rootProperties.pkgOrganization =
       Utils.getOptionalConfigProperty(project, 'bintray.pkgOrganization', null, rootProperties.username)
     rootProperties.pkgRepository =
-      Utils.getOptionalConfigProperty(project, 'bintray.pkgRepository', null, project.group)
+      Utils.getOptionalConfigProperty(project, 'bintray.pkgRepository', null, project.rootProject.group)
     rootProperties.pkgName =
       Utils.getOptionalConfigProperty(project, 'bintray.pkgName', null, project.rootProject.name)
     rootProperties.pkgVersion = project.version
 
     // add 'bintray' extension
     def bintrayExtension =
-      project.extensions.create("bintray", BintrayRepositoryExtension, 'root', rootProperties, null)
+      project.extensions.create("bintray",
+                                BintrayRepositoryExtension,
+                                this,
+                                'root')
 
-    def repositoryExtensions = []
-
-    // for each repository add an extension to 'bintray' with the name of the repository
-    repositories.each { name ->
-      def repositoryProperties = rootProperties.keySet().collectEntries { k ->
-        def propertyName = "bintray.repositories.${name}.${k}"
-        [k, Utils.getOptionalConfigProperty(project, propertyName)]
-      }
-
-      repositoryExtensions << bintrayExtension.extensions.create(name,
-                                                                 BintrayRepositoryExtension,
-                                                                 name,
-                                                                 repositoryProperties,
-                                                                 bintrayExtension)
-    }
+    ConfigureUtil.configureByMap(rootProperties, bintrayExtension)
 
     // check that the api key is defined!
-    repositoryExtensions.each { BintrayRepositoryExtension extension ->
-      if(!extension.apiKey)
-      {
-        bintrayExtension.apiKey = promptForApiKey(project)
+    project.afterEvaluate {
+      repositoryExtensions.each { BintrayRepositoryExtension extension ->
+        if(!extension.apiKey)
+        {
+          bintrayExtension.apiKey = promptForApiKey(project)
+        }
       }
-    }
 
     // add a task to create the (missing) packages
-    if(repositoryExtensions)
-    {
-      project.task([description: "Ensures that bintray packages are created"], 'createBintrayPackages') << {
-        repositoryExtensions.each { ext -> createBintrayPackages(project, ext) }
+      if(repositoryExtensions)
+      {
+        project.task([description: "Ensures that bintray packages are created"], 'createBintrayPackages') << {
+          repositoryExtensions.each { ext -> createBintrayPackages(project, ext) }
+        }
       }
     }
+  }
+
+  protected BintrayRepositoryExtension addBintrayRepositoryExtension(String name)
+  {
+    def bintrayExtension = project.bintray
+
+    def repositoryProperties = BintrayRepositoryExtension.CONFIGURABLE_PROPERTIES.collectEntries { k ->
+      def propertyName = "bintray.repositories.${name}.${k}"
+      [k, Utils.getOptionalConfigProperty(project, propertyName)]
+    }
+
+    BintrayRepositoryExtension extension =
+      bintrayExtension.extensions.create(name,
+                                         BintrayRepositoryExtension,
+                                         name,
+                                         bintrayExtension)
+
+    ConfigureUtil.configureByMap(repositoryProperties, extension)
+
+    repositoryExtensions << extension
+
+    return extension
   }
 
   static def promptForApiKey(Project project)
@@ -195,6 +199,18 @@ class RepositoryPlugin implements Plugin<Project>
 
 class BintrayRepositoryExtension
 {
+  public static CONFIGURABLE_PROPERTIES = [
+    'apiBaseUrl',
+    'username',
+    'apiKey',
+    'pkgOrganization',
+    'pkgRepository',
+    'pkgName',
+    'pkgVersion'
+  ]
+
+  private final RepositoryPlugin _plugin
+
   String name
 
   def apiBaseUrl
@@ -207,19 +223,34 @@ class BintrayRepositoryExtension
 
   private BintrayRepositoryExtension _parent
 
-  BintrayRepositoryExtension(String name, Map config, BintrayRepositoryExtension parent)
+  BintrayRepositoryExtension(RepositoryPlugin plugin,
+                             String name)
   {
+    this(plugin,
+         name,
+         null)
+  }
+
+  BintrayRepositoryExtension(String name,
+                             BintrayRepositoryExtension parent)
+  {
+    this(parent.thisPlugin,
+         name,
+         parent)
+  }
+
+  BintrayRepositoryExtension(RepositoryPlugin plugin,
+                             String name,
+                             BintrayRepositoryExtension parent)
+  {
+    _plugin = plugin
     this.name = name
     _parent = parent
+  }
 
-    apiBaseUrl = config.apiBaseUrl
-    username = config.username
-    apiKey = config.apiKey
-    pkgOrganization = config.pkgOrganization
-    pkgRepository = config.pkgRepository
-    pkgName = config.pkgName
-    pkgVersion = config.pkgVersion
-
+  protected RepositoryPlugin getThisPlugin()
+  {
+    return _plugin
   }
 
   String getName()
@@ -260,6 +291,75 @@ class BintrayRepositoryExtension
   def getPkgVersion()
   {
     return pkgVersion ?: _parent?.getPkgVersion()
+  }
+
+  RepositoryHandler jcenter()
+  {
+    RepositoryHandlerConfigurationImpl.configure {
+      mavenRepo(url: 'http://jcenter.bintray.com')
+    }
+  }
+
+  /**
+   * Creates a maven style repo
+   */
+  Closure mavenRepo()
+  {
+    mavenRepo(null)
+  }
+
+  Closure mavenRepo(Closure additionalConfiguration)
+  {
+    def res = {
+      mavenDeployer {
+        repository(url: "${getApiBaseUrl()}/maven/${getPkgOrganization()}/${getPkgRepository()}/${getPkgName()}") {
+          authentication(userName: getUsername().toString(), password: getApiKey().toString())
+        }
+
+        if(additionalConfiguration)
+        {
+          new ClosureBackedAction(additionalConfiguration).execute(delegate)
+        }
+      }
+    }
+
+    return res
+  }
+
+  /**
+   * Creates an ivy style repo (and by default a flat structure)
+   */
+  Closure ivyRepo()
+  {
+    ivyRepo(null)
+  }
+
+  Closure ivyRepo(Closure additionalConfiguration)
+  {
+    def res = {
+      ivy {
+        url = "${getApiBaseUrl()}/content/${getPkgOrganization()}/${getPkgRepository()}/${getPkgName()}/${getPkgVersion()}"
+        credentials {
+          username = getUsername().toString()
+          password = getApiKey().toString()
+        }
+        layout "pattern", {
+          artifact "[artifact]-[revision](-[classifier])(.[ext])"
+          ivy "ivy-[revision].xml"
+        }
+        if(additionalConfiguration)
+        {
+          new ClosureBackedAction(additionalConfiguration).execute(delegate)
+        }
+      }
+    }
+
+    return res
+  }
+
+  def propertyMissing(String name)
+  {
+    return thisPlugin.addBintrayRepositoryExtension(name)
   }
 
   @Override

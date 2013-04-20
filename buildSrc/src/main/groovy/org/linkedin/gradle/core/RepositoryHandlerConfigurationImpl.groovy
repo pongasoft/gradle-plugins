@@ -31,33 +31,52 @@ class RepositoryHandlerConfigurationImpl implements RepositoryHandlerConfigurati
 
   def configurations = []
 
+  public static ThreadLocal<RepositoryHandler> CONFIGURATION_IN_PROGRESS = new ThreadLocal<>()
+
   @Override
   RepositoryHandler configure()
   {
     configure(project.repositories)
   }
 
+  /**
+   * static version of configure which uses the thread local variable
+   */
+  public static RepositoryHandler configure(Closure c)
+  {
+    ConfigureUtil.configure(c, CONFIGURATION_IN_PROGRESS.get())
+  }
+
   @Override
   RepositoryHandler configure(RepositoryHandler repository)
   {
-    configurations?.each { c ->
-      switch(c)
-      {
-        case { it instanceof Closure }:
-          ConfigureUtil.configure(c as Closure, repository)
-          break;
+    try
+    {
+      CONFIGURATION_IN_PROGRESS.set(repository)
 
-        case { it instanceof String }:
-          container.find(c as String)?.configure(repository)
-          break;
+      configurations?.each { c ->
+        switch(c)
+        {
+          case { it instanceof Closure }:
+            ConfigureUtil.configure(c as Closure, repository)
+            break;
 
-        case { it instanceof RepositoryHandlerConfiguration }:
-          c.configure(repository)
-          break;
+          case { it instanceof String }:
+            container.find(c as String)?.configure(repository)
+            break;
 
-        default:
-          throw new IllegalArgumentException("invalid type ${c.class.name}")
+          case { it instanceof RepositoryHandlerConfiguration }:
+            c.configure(repository)
+            break;
+
+          default:
+            throw new IllegalArgumentException("invalid type ${c.class.name}")
+        }
       }
+    }
+    finally
+    {
+      CONFIGURATION_IN_PROGRESS.set(null)
     }
 
     return repository;

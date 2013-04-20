@@ -44,7 +44,7 @@ class Utils
       "${baseFilename}-${it}.${extension}" }
     )
 
-    def filesToTry = []
+    def filesToTry = new LinkedHashSet()
 
     // 1. (root) local files
     if(project.rootProject != project)
@@ -59,9 +59,9 @@ class Utils
       filesToTry << project.file(it)
     }
 
-    // 3. $HOME/.org.linkedin/*
+    // 3. $HOME/.<group>/*
     names.each {
-      filesToTry << new File(homeDir, ".org.linkedin/${it}")
+      filesToTry << new File(homeDir, ".${project.group}/${it}")
     }
 
     // 4. $HOME/.gradle/*
@@ -79,15 +79,26 @@ class Utils
 
   static def computePropertyNamesFromLessToMoreSpecific(Project project)
   {
-    [
-      "${project.group}",
-      "${project.rootProject.name}",
-      "${project.name}",
-      "${project.group}-${project.name}",
-      "${project.rootProject.name}-${project.group}",
-      "${project.rootProject.name}-${project.name}",
-      "${project.rootProject.name}-${project.group}-${project.name}"
-    ]
+    if(project != project.rootProject)
+    {
+      [
+        "${project.group}",
+        "${project.rootProject.name}",
+        "${project.name}",
+        "${project.group}-${project.name}",
+        "${project.rootProject.name}-${project.group}",
+        "${project.rootProject.name}-${project.name}",
+        "${project.rootProject.name}-${project.group}-${project.name}"
+      ]
+    }
+    else
+    {
+      [
+        "${project.group}",
+        "${project.name}",
+        "${project.group}-${project.name}"
+      ]
+    }
   }
 
   /**
