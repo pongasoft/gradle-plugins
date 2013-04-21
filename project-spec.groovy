@@ -17,7 +17,7 @@
 spec = [
   name: 'gradle-plugins',
   group: 'org.pongasoft',
-  version: '1.7.0',
+  version: '2.0.0',
 
   versions: [
     jdk: '1.7',
@@ -36,7 +36,7 @@ spec = [
   ],
 ]
 
-spec.scmUrl = "git@github.com:linkedin/${spec.name}.git"
+spec.scmUrl = "git@github.com:pongasoft/${spec.name}.git"
 
 /**
  * External dependencies

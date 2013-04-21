@@ -398,11 +398,6 @@ class RepositoryPluginExtension
       return name
   }
 
-  RepositoryPluginExtension getBintray()
-  {
-    return new RepositoryPluginExtension(_container, 'bintray')
-  }
-
   // handle allRepositories.<name> << { } => add another configuration
   // handle allRepositories.<name>.configure()
   def propertyMissing(String name)

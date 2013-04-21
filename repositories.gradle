@@ -46,7 +46,7 @@ def pomConfig = { pomToConfigure ->
   pomToConfigure.project {
     name project.name
     description 'A useful set of gradle plugins'
-    url 'http://github.com/linkedin/gradle-plugins'
+    url 'http://github.com/pongasoft/gradle-plugins'
     licenses {
       license {
         name 'The Apache Software License, Version 2.0'
@@ -81,7 +81,7 @@ allRepositories.snapshotPublish = {
 /**
  * Bintray binaries / maven style
  */
-allRepositories.bintray.binaries = bintray.binaries.mavenRepo {
+allRepositories.binaries = bintray.binaries.mavenRepo {
   pom.whenConfigured(pomConfig)
 }
 
@@ -89,7 +89,7 @@ allRepositories.bintray.binaries = bintray.binaries.mavenRepo {
  * Bintray distributions (note that there are no distributions in this project... used for testing
  * only (see test-2)
  */
-//allRepositories.bintray.distributions = bintray.distributions.ivyRepo()
+//allRepositories.distributions = bintray.distributions.ivyRepo()
 
 // by default all modules are published into bintray.binaries (can be overriden in a given module)
-allRepositories.publish = allRepositories.bintray.binaries
+allRepositories.publish = allRepositories.binaries
