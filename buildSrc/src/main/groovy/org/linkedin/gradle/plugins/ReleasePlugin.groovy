@@ -234,8 +234,8 @@ class ReleasePluginExtension
   def javadocConfigurations = [javadoc: ['docs']]
   def groovydocConfigurations = [groovydoc: ['docs']]
 
-  String snapshotRelease = 'snapshotRelease'
-  String release = 'release'
-  String snapshotPublish = 'snapshotPublish'
-  String publish = 'publish'
+  def snapshotRelease = 'snapshotRelease'
+  def release = 'release'
+  def snapshotPublish = 'snapshotPublish'
+  def publish = 'publish'
 }

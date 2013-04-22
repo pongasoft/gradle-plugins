@@ -154,7 +154,7 @@ The plugin adds a `release` extension which allows you to change which repositor
 per project basis:
 
         release  {
-          publish = 'bintray.distributions'
+          publish = allRepositories.distributions
         }
 
 This plugin is used in every project that needs to be released.

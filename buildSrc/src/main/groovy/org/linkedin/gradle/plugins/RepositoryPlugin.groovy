@@ -190,10 +190,12 @@ class RepositoryPlugin implements Plugin<Project>
     return http
   }
 
-
-  static RepositoryHandlerConfiguration findRepository(Project project, String name)
+  static RepositoryHandlerConfiguration findRepository(Project project, def name)
   {
-    project.allRepositories."${name}"
+    if(name instanceof RepositoryHandlerConfiguration)
+      return name
+    else
+      project.allRepositories."${name}"
   }
 }
 
@@ -310,10 +312,11 @@ class BintrayRepositoryExtension
 
   Closure mavenRepo(Closure additionalConfiguration)
   {
+    def repo = this
     def res = {
       mavenDeployer {
-        repository(url: "${getApiBaseUrl()}/maven/${getPkgOrganization()}/${getPkgRepository()}/${getPkgName()}") {
-          authentication(userName: getUsername().toString(), password: getApiKey().toString())
+        repository(url: "${repo.getApiBaseUrl()}/maven/${repo.getPkgOrganization()}/${repo.getPkgRepository()}/${repo.getPkgName()}") {
+          authentication(userName: repo.getUsername().toString(), password: repo.getApiKey().toString())
         }
 
         if(additionalConfiguration)
@@ -336,16 +339,18 @@ class BintrayRepositoryExtension
 
   Closure ivyRepo(Closure additionalConfiguration)
   {
+    // using repo instead of 'this' because it interferes with credentials username!
+    def repo = this
     def res = {
       ivy {
-        url = "${getApiBaseUrl()}/content/${getPkgOrganization()}/${getPkgRepository()}/${getPkgName()}/${getPkgVersion()}"
+        url = "${repo.getApiBaseUrl()}/content/${repo.getPkgOrganization()}/${repo.getPkgRepository()}/${repo.getPkgName()}/${repo.getPkgVersion()}"
         credentials {
-          username = getUsername().toString()
-          password = getApiKey().toString()
+          username = repo.getUsername().toString()
+          password = repo.getApiKey().toString()
         }
         layout "pattern", {
           artifact "[artifact]-[revision](-[classifier])(.[ext])"
-          ivy "ivy-[revision].xml"
+          ivy "[module]-[revision](-[classifier]).ivy"
         }
         if(additionalConfiguration)
         {

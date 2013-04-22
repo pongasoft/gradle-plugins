@@ -29,11 +29,10 @@ def topReleaseDir = userConfig.top.release.dir ?: "${topBuildDir}/release"
  * Repositories for release (local)
  */
 allRepositories.snapshotRelease = {
-  add(new org.apache.ivy.plugins.resolver.FileSystemResolver()) {
-    name = 'local-release'
-    addIvyPattern "${topReleaseDir}/[organisation]/[module]/[revision]/[module]-[revision].ivy"
-    addArtifactPattern "${topReleaseDir}/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
-    m2compatible = true
+  ivy {
+    name = "local-release"
+    url = topReleaseDir
+    layout 'maven'
   }
 }
 

@@ -1,3 +1,7 @@
+2.0.1 (2012/04/21)
+------------------
+* fixed username/password in ivy distribution
+
 2.0.0 (2012/04/20)
 ------------------
 * use of jdk1.7
