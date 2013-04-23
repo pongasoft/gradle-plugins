@@ -79,7 +79,7 @@ class CmdLinePlugin implements Plugin<Project>
       convention.resources?.each { resource ->
         def resourceInto = convention.assemblePackageFile
         def replaceTokens = true
-        def replaceTokensInclude = null
+        def replaceTokensInclude = '**/*'
         def replaceTokensExclude = null
         def resourceFrom = null
 
