@@ -79,12 +79,16 @@ class CmdLinePlugin implements Plugin<Project>
       convention.resources?.each { resource ->
         def resourceInto = convention.assemblePackageFile
         def replaceTokens = true
+        def replaceTokensInclude = null
+        def replaceTokensExclude = null
         def resourceFrom = null
 
         if(resource instanceof Map)
         {
           resourceInto = resource.into ?: resourceInto
           replaceTokens = resource.replaceTokens == null ? replaceTokens : resource.replaceTokens
+          replaceTokensInclude = resource.replaceTokensInclude
+          replaceTokensExclude = resource.replaceTokensExclude
           resourceFrom = resource.from
         }
         else
@@ -98,10 +102,31 @@ class CmdLinePlugin implements Plugin<Project>
         }
 
         project.copy {
-          from(resourceFrom) {
-            if(replaceTokens && convention.replacementTokens)
+          if(replaceTokens && convention.replacementTokens)
+          {
+            // copy and replace tokens for only the ones that need to be replaced
+            from(resourceFrom) {
+              if(replaceTokensInclude)
+                include replaceTokensInclude
+              if(replaceTokensExclude)
+                exclude replaceTokensExclude
               filter(tokens: convention.replacementTokens, ReplaceTokens)
+            }
+            // copy without replacing tokens the opposite
+            from(resourceFrom) {
+              if(replaceTokensInclude)
+                exclude replaceTokensInclude
+              if(replaceTokensExclude)
+                include replaceTokensExclude
+            }
           }
+          else
+          {
+            // copy everything... no tokens to replace
+            from(resourceFrom)
+          }
+
+          // destination
           into resourceInto
         }
       }
@@ -226,6 +251,10 @@ class CmdLinePluginConvention
    *          field of the copy task (optional => default to {@link #assemblePackageFile})</li>
    * <li>replaceTokens: a <code>boolean</code> to replace tokens or not (default to
    *                    <code>true</code>)</li>
+   * <li>replaceTokensInclude: include only those files in the token replacements (other files
+   *                           will be copied as is)</li>
+   * <li>replaceTokensExclude: exclude those files from the token replacements (other files
+   *                           will be token replaced)</li>
    *
    * For convenience, you can use a shortcut notation containing only the 'from' part in which case
    * it will be converted as:
