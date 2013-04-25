@@ -23,6 +23,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.tasks.bundling.Compression
+import org.linkedin.gradle.core.BuildInfo
 import org.linkedin.gradle.tasks.Tar
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.BasePlugin
@@ -129,6 +130,14 @@ class CmdLinePlugin implements Plugin<Project>
           // destination
           into resourceInto
         }
+      }
+
+      // adding build info to the root of the package
+      if(!convention.noBuildInfo)
+      {
+        BuildInfo.saveToExternalFileIfExists(project,
+                                             new File(convention.assemblePackageFile,
+                                                      "build.info"))
       }
 
       convention.folders?.each { project.mkdir(new File(convention.assemblePackageFile, it)) }
@@ -242,6 +251,7 @@ class CmdLinePluginConvention
   File packageFile
   File installDir
   File installFile
+  boolean noBuildInfo = false
   def replacementTokens = [:]
 
   /**

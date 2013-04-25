@@ -34,6 +34,7 @@ public class BuildInfo
 
   String name
   String version
+  String scmUrl
   String scmCommitVersion
   String gradleVersion
   String jvm
@@ -57,6 +58,7 @@ public class BuildInfo
 
     name = rootProject.name
     version = rootProject.version
+    scmUrl = computeScmUrl(rootProject)
     scmCommitVersion = computeScmCommitVersion(rootProject)
     gradleVersion = rootProject.gradle.gradleVersion
     jvm = Jvm.current().toString()
@@ -67,10 +69,10 @@ public class BuildInfo
 
     rootProject.gradle.buildFinished { BuildResult result ->
       buildDuration = System.currentTimeMillis() - buildTimestamp
-      rootProject.logger.info(toJson())
+      rootProject.logger.info(toInternalJson())
       if(!result.failure)
       {
-        computeBuildInfoFile(rootProject).text = toJson()
+        computeBuildInfoFile(rootProject).text = toInternalJson()
       }
     }
   }
@@ -82,15 +84,15 @@ public class BuildInfo
 
   void addReleasedArtifacts(Project project, Configuration configuration)
   {
-    releasedArtifacts.addAll(configuration.allArtifacts.collect { toArtifactMap(project, it) })
+    releasedArtifacts.addAll(configuration.allArtifacts.collect { createArtifactMap(project, it) })
   }
 
   void addPublishedArtifacts(Project project, Configuration configuration)
   {
-    publishedArtifacts.addAll(configuration.allArtifacts.collect { toArtifactMap(project, it) })
+    publishedArtifacts.addAll(configuration.allArtifacts.collect { createArtifactMap(project, it) })
   }
 
-  private Map toArtifactMap(Project project, PublishArtifact artifact)
+  private Map createArtifactMap(Project project, PublishArtifact artifact)
   {
     [
       project: project.name,
@@ -103,37 +105,73 @@ public class BuildInfo
     ]
   }
 
-  private String toJson()
+  public Map toExternalMap()
   {
-    def json =[:]
+    def map = [:]
 
-    json.name = name
-    json.version = version
+    map.name = name
+    map.version = version
+
+    if(scmUrl)
+      map.scmUrl = scmUrl
 
     if(scmCommitVersion)
-      json.scmCommitVersion = scmCommitVersion
+      map.scmCommitVersion = scmCommitVersion
 
-    json.gradleVersion = gradleVersion
-    json.jvm = jvm
-    json.os = os
+    map.gradleVersion = gradleVersion
+    map.jvm = jvm
+    map.os = os
 
-    json.buildTimestamp = buildTimestamp
-    json.buildTime = buildTime
-    json.buildDuration = buildDuration
+    map.buildTimestamp = buildTimestamp
+    map.buildTime = buildTime
+
+    return map
+  }
+
+  public String toExternalJson()
+  {
+    JsonUtils.prettyPrint(toExternalMap())
+  }
+
+  private Map toInternalMap()
+  {
+    def map = [:]
+
+    map.name = name
+    map.version = version
+
+    if(scmUrl)
+      map.scmUrl = scmUrl
+
+    if(scmCommitVersion)
+      map.scmCommitVersion = scmCommitVersion
+
+    map.gradleVersion = gradleVersion
+    map.jvm = jvm
+    map.os = os
+
+    map.buildTimestamp = buildTimestamp
+    map.buildTime = buildTime
+    map.buildDuration = buildDuration
 
     if(buildProperties)
-      json.buildProperties = buildProperties
+      map.buildProperties = buildProperties
 
     if(buildTasks)
-      json.buildTasks = buildTasks
+      map.buildTasks = buildTasks
 
     if(releasedArtifacts)
-      json.releasedArtifacts = releasedArtifacts
+      map.releasedArtifacts = releasedArtifacts
 
     if(publishedArtifacts)
-      json.publishedArtifacts = publishedArtifacts
+      map.publishedArtifacts = publishedArtifacts
 
-    JsonUtils.prettyPrint(json)
+    return map
+  }
+
+  private String toInternalJson()
+  {
+    JsonUtils.prettyPrint(toInternalMap())
   }
 
   private static String computeScmCommitVersion(Project rootProject)
@@ -148,7 +186,15 @@ public class BuildInfo
       }
     }
 
-    return '<unknown>'
+    return null
+  }
+
+  private static String computeScmUrl(Project rootProject)
+  {
+    if(rootProject.hasProperty('spec'))
+      return rootProject.spec.scmUrl
+    else
+      return null
   }
 
   private static File computeBuildInfoFile(Project rootProject)
@@ -168,6 +214,23 @@ public class BuildInfo
     }
 
     return project.buildInfo
+  }
+
+  /**
+   * @return <code>true</code> if was saved
+   */
+  public static boolean saveToExternalFileIfExists(Project project, File fileToSave)
+  {
+    project = project.rootProject
+
+    if(!project.hasProperty('buildInfo'))
+    {
+      return false
+    }
+
+    fileToSave.text = findOrCreate(project).toExternalJson()
+
+    return true
   }
 
   private static BuildInfo fromJson(Project rootProject, String json)
