@@ -102,6 +102,19 @@ class Utils
   }
 
   /**
+   * @return a (optional) boolean configuration property
+   */
+  static boolean getConfigBooleanProjectProperty(Project project,
+                                                 String propertyName,
+                                                 boolean defaultValue)
+  {
+    if(project.hasProperty(propertyName))
+      return project."${propertyName}".toString() == 'true'
+    else
+      return defaultValue
+  }
+
+  /**
    * Try to locate the config property using a dotted name (ex: top.build.dir). First try
    * the project, then the userConfig (if present), then the spec object (if present). When the
    * property is not found, the action specifies how to handle it.

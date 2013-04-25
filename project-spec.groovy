@@ -17,11 +17,10 @@
 spec = [
   name: 'gradle-plugins',
   group: 'org.pongasoft',
-  version: '2.0.2',
+  version: '2.1.0',
 
   versions: [
-    jdk: '1.7',
-    json: '20090211'
+    jdk: '1.7'
   ],
 
   artifacts: ["a1", "a2"],
@@ -37,12 +36,12 @@ spec = [
 ]
 
 spec.scmUrl = "git@github.com:pongasoft/${spec.name}.git"
+spec.scm = 'git'
 
 /**
  * External dependencies
  */
 spec.external = [
-  json: "org.json:json:${spec.versions.json}",
   httpBuilder: "org.codehaus.groovy.modules.http-builder:http-builder:0.6"
 ]
 

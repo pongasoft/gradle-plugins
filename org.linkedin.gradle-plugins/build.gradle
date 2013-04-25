@@ -22,7 +22,6 @@ allRepositories.build.configure()
 
 dependencies {
   compile gradleApi()
-  compile spec.external.json
   compile spec.external.httpBuilder
   compile localGroovy()
 }

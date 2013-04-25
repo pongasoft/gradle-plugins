@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2010-2010 LinkedIn, Inc
- * Portions Copyright (c) 2013 Yan Pujante
+ * Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,21 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.linkedin.gradle.plugins
 
-apply plugin: 'groovy'
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.linkedin.gradle.core.BuildInfo
 
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
-
-repositories {
-  mavenRepo(url: 'http://jcenter.bintray.com')
-  mavenCentral()
-}
-
-dependencies {
-  compile gradleApi()
-  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.6'
-  compile localGroovy()
-
-  testCompile 'junit:junit:4.4'
+/**
+ * @author yan@pongasoft.com  */
+public class BuildInfoPlugin implements Plugin<Project>
+{
+  @Override
+  void apply(Project project)
+  {
+    BuildInfo.findOrCreate(project)
+  }
 }

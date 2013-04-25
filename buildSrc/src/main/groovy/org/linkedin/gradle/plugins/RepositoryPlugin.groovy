@@ -44,6 +44,7 @@ class RepositoryPlugin implements Plugin<Project>
 
   private Project project
   private Collection<BintrayRepositoryExtension> repositoryExtensions = []
+  public File bintrayStagingRepository
 
   void apply(Project project)
   {
@@ -69,6 +70,24 @@ class RepositoryPlugin implements Plugin<Project>
   {
     project.apply from: repositoryFile
     project.logger.debug("Loaded ${repositoryFile}.")
+  }
+
+  boolean hasBintrayRepositories()
+  {
+    !repositoryExtensions.empty
+  }
+
+  synchronized def withBintrayStagingRepository(Closure closure)
+  {
+    bintrayStagingRepository = new File("/tmp/bintray/staging")
+    try
+    {
+      closure()
+    }
+    finally
+    {
+      bintrayStagingRepository = null
+    }
   }
 
   /**
@@ -262,7 +281,7 @@ class BintrayRepositoryExtension
 
   def getApiBaseUrl()
   {
-    return apiBaseUrl ?: _parent?.getApiBaseUrl()
+    _plugin.bintrayStagingRepository?.toURI() ?: apiBaseUrl ?: _parent?.getApiBaseUrl()
   }
 
   def getUsername()

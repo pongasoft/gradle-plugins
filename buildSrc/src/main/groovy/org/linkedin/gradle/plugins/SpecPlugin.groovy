@@ -25,7 +25,6 @@ import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.util.DeleteOnExit
 import org.linkedin.gradle.utils.JsonUtils
 import org.linkedin.gradle.utils.Utils
-import org.json.JSONException
 
 /**
  * The goal of this plugin is to read/parse the product spec and make it available during the build
@@ -52,9 +51,9 @@ class SpecPlugin implements Plugin<Project>
    */
   def configureProject()
   {
-    // unless -Prealease=true is provided on the command line (or in ~/.gradle.properties)
+    // unless -Prelease=true is provided on the command line (or in ~/.gradle.properties)
     // we force the snapshot mode
-    if(project.hasProperty('release') && project.release.toString() == 'true')
+    if(Utils.getConfigBooleanProjectProperty(project, 'release', false))
     {
       if(project.spec.version.endsWith('-SNAPSHOT'))
         throw new IllegalStateException("${project.spec.version} is a snapshot version")
@@ -111,25 +110,14 @@ class SpecPlugin implements Plugin<Project>
     }
   }
 
-  protected def parseProjectSpec(File projectSpectFile, boolean expandProperties)
+  protected def parseProjectSpec(File projectSpecFile, boolean expandProperties)
   {
-    if(projectSpectFile.exists())
+    if(projectSpecFile.exists())
     {
-      try
-      {
-        def projectSpec = JsonUtils.fromJSON(projectSpectFile.text)
-        if(expandProperties)
-          projectSpec = expandJSONProperties(projectSpectFile, Utils.flatten(projectSpec))
-        return projectSpec
-      }
-      catch (JSONException e)
-      {
-        def explanation = JsonUtils.explainJsonParsingError(e.message, projectSpectFile)
-        if(explanation)
-          throw new RuntimeException("${e.message}:\n${explanation}", e)
-        else
-          throw e
-      }
+      def projectSpec = JsonUtils.fromJSON(projectSpecFile.text)
+      if(expandProperties)
+        projectSpec = expandJSONProperties(projectSpecFile, Utils.flatten(projectSpec))
+      return projectSpec
     }
     else
     {
