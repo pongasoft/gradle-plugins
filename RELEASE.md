@@ -1,3 +1,13 @@
+2.1.0 (2013/04/26)
+------------------
+* Implemented [#1](https://github.com/pongasoft/gradle-plugins/issues/1): _Allow for "orphan" publishing_
+
+  * Now by default, `publish` does not do a build and simply publishes what has been released in a
+    previous build.
+
+* Added `org.pongasoft.buildInfo` to generate a `build.info` file
+
+
 2.0.2 (2013/04/23)
 ------------------
 * handle include/exclude for replacement tokens

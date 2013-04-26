@@ -136,11 +136,15 @@ Check the `repositories.gradle` file that comes with this project for examples.
 3.4 `org.linkedin.release`
 --------------------------
 `org.linkedin.release` is a plugin which adds `release` and `publish` tasks. `release` is supposed
-to build and release in a local repository. `publish` is supposed to build and publish in a remote
-repository. None of this is enforced and you can still use whichever convention you want. If it is a
-java or groovy project, it also releases/publishes sources, javadoc and groovydoc. The plugin also
-knows about snapshots (where the version ends with `-SNAPSHOT`). The repositories are configured
-using the `org.linkedin.repository` plugin with the following values:
+to build and release in a local repository. `publish` is supposed to publish in a remote
+repository. By default, `publish` will publish (without rebuilding!) what has been released when
+invoking the `release` task on a previous build. This allows the following use case: build and
+release (locally), do some sanity check and if everything is ok, then do a `publish` which will
+simply publish what has already been built. If you want to rebuild on `publish` then simply add
+the property `-Prebuild=true`. If it is a java or groovy project, it also releases/publishes
+sources, javadoc and groovydoc. The plugin also knows about snapshots (where the version ends
+with `-SNAPSHOT`). The repositories are configured using the `org.linkedin.repository` plugin
+with the following values:
 
         allRepositories.release -> for release
         allRepositories.snapshotRelease -> for release of snapshots
@@ -149,6 +153,10 @@ using the `org.linkedin.repository` plugin with the following values:
 
 See [repositories.gradle](https://github.com/pongasoft/gradle-plugins/blob/master/repositories.gradle)
 for an example of configuration.
+
+Note that local vs remote is not enforced and totally depends on how you set up the repositories.
+By default `release` does a build and release, and `publish` does a publish of what has already
+been built and released in a previous build.
 
 The plugin adds a `release` extension which allows you to change which repository gets used on a
 per project basis:
@@ -194,6 +202,36 @@ as `cmdline`:
         cmdline {
           replacementTokens = [__version__: project.version]
           resources << fileTree(dir: rootDir, includes: ['*.txt', '*.md'])
+        }
+
+If the `buildInfo` object is defined, this plugin will automatically save a `build.info` file at
+the root of the package. To disable this feature use:
+
+        cmdline {
+          noBuildInfo = true
+        }
+
+3.6 `org.pongasoft.buildInfo`
+-----------------------------
+`org.pongasoft.buildInfo` is a plugin which adds the property `buildInfo` to the root project and
+generates a file (at the root of the build) when the build completes. The content of this file is
+a json representation of the `buildInfo`. Example of content:
+
+        {
+            "name": "gradle-plugins",
+            "version": "2.1.0",
+            "scmUrl": "git@github.com:pongasoft/gradle-plugins.git",
+            "scmCommitVersion": "24134d260317bc077ba76f590e114ec2740e6117",
+            "gradleVersion": "1.5",
+            "jvm": "1.7.0_21 (Oracle Corporation 23.21-b01)",
+            "os": "Mac OS X 10.8.3 x86_64",
+            "buildTime": 1367010673446,
+            "buildTimeString": "2013/04/26 11:11:13 HST",
+            "buildDuration": 13996,
+            "buildDurationString": "13.996 secs",
+            "buildTasks": [
+                "publish"
+            ]
         }
 
 4. Compilation

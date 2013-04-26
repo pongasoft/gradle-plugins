@@ -292,7 +292,7 @@ class ReleasePlugin implements Plugin<Project>
                                 buildDependencies: new DefaultTaskDependency())
       publish.artifacts.add(noDependencyArtifact)
 
-      project.logger.lifecycle("[${noDependencyArtifact.name}] publishing [${artifactFile}]")
+      project.logger.info("[${noDependencyArtifact.name}] publishing [${artifactFile}]")
     }
   }
 
