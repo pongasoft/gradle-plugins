@@ -19,8 +19,10 @@ import org.gradle.BuildResult
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.PublishArtifact
+import org.gradle.initialization.BuildRequestMetaData
 import org.gradle.internal.jvm.Jvm
 import org.gradle.internal.os.OperatingSystem
+import org.gradle.util.Clock
 import org.gradle.util.hash.HashUtil
 import org.linkedin.gradle.utils.JsonUtils
 
@@ -39,9 +41,10 @@ public class BuildInfo
   String gradleVersion
   String jvm
   String os
-  long buildTimestamp = System.currentTimeMillis()
-  String buildTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss z").format(new Date(buildTimestamp))
+  long buildTime
+  String buildTimeString
   long buildDuration = 0L
+  String buildDurationString
   def buildTasks
   def buildProperties
   def releasedArtifacts = Collections.synchronizedCollection([])
@@ -64,11 +67,16 @@ public class BuildInfo
     jvm = Jvm.current().toString()
     os = OperatingSystem.current().toString()
 
+    Clock clock = rootProject.gradle.services.get(BuildRequestMetaData).buildTimeClock
+    buildTime = clock.startTime
+    buildTimeString = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss z").format(new Date(buildTime))
+
     buildTasks = rootProject.gradle.startParameter.taskNames
     buildProperties = rootProject.gradle.startParameter.projectProperties
 
     rootProject.gradle.buildFinished { BuildResult result ->
-      buildDuration = System.currentTimeMillis() - buildTimestamp
+      buildDuration = System.currentTimeMillis() - buildTime
+      buildDurationString = Clock.prettyTime(buildDuration)
       rootProject.logger.info(toInternalJson())
       if(!result.failure)
       {
@@ -79,20 +87,27 @@ public class BuildInfo
 
   Date getBuildDate()
   {
-    new Date(buildTimestamp)
+    new Date(buildTime)
   }
 
   void addReleasedArtifacts(Project project, Configuration configuration)
   {
-    releasedArtifacts.addAll(configuration.allArtifacts.collect { createArtifactMap(project, it) })
+    addArtifacts(project, configuration, releasedArtifacts)
   }
 
   void addPublishedArtifacts(Project project, Configuration configuration)
   {
-    publishedArtifacts.addAll(configuration.allArtifacts.collect { createArtifactMap(project, it) })
+    addArtifacts(project, configuration, publishedArtifacts)
   }
 
-  private Map createArtifactMap(Project project, PublishArtifact artifact)
+  private static void addArtifacts(Project project, Configuration configuration, def artifacts)
+  {
+    configuration.allArtifacts.all { PublishArtifact artifact ->
+      artifacts << createArtifactMap(project, artifact)
+    }
+  }
+
+  private static Map createArtifactMap(Project project, PublishArtifact artifact)
   {
     [
       project: project.name,
@@ -122,8 +137,8 @@ public class BuildInfo
     map.jvm = jvm
     map.os = os
 
-    map.buildTimestamp = buildTimestamp
     map.buildTime = buildTime
+    map.buildTimeString = buildTimeString
 
     return map
   }
@@ -150,9 +165,10 @@ public class BuildInfo
     map.jvm = jvm
     map.os = os
 
-    map.buildTimestamp = buildTimestamp
     map.buildTime = buildTime
+    map.buildTimeString = buildTimeString
     map.buildDuration = buildDuration
+    map.buildDurationString = buildDurationString
 
     if(buildProperties)
       map.buildProperties = buildProperties
