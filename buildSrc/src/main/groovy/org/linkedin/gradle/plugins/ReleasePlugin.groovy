@@ -142,15 +142,12 @@ class ReleasePlugin implements Plugin<Project>
       }
 
       // we make sure that if both release and publish are provided, release happens first!
-      if(project.gradle.startParameter.taskNames.containsAll(['release', 'publish']))
+      project.uploadPublishMaster.mustRunAfter 'release'
+
+      // if publish is 'detached' then we make sure that the previous build actually did
+      // build the artifacts!
+      if(!project.gradle.startParameter.taskNames.containsAll(['release', 'publish']))
       {
-        project.logger.debug("detected release and publish in same build => publish depends on release")
-        project.uploadPublishMaster.dependsOn 'release'
-      }
-      else
-      {
-        // if publish is 'detached' then we make sure that the previous build actually did
-        // build the artifacts!
         if(!publishMasterConfiguration.getExtendsFrom().contains(releaseMasterConfiguration))
         {
           project.logger.debug("${publishMasterConfiguration.name} is orphan => populating from previous build")
@@ -344,7 +341,7 @@ class ReleasePlugin implements Plugin<Project>
   {
     Configuration configuration = project.configurations.findByName(configurationName)
     if(!configuration)
-      configuration = project.configurations.add(configurationName)
+      configuration = project.configurations.create(configurationName)
     return configuration
   }
 

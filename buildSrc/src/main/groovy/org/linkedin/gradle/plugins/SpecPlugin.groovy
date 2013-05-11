@@ -15,14 +15,11 @@
  * the License.
  */
 
-
-
 package org.linkedin.gradle.plugins
 
 import org.gradle.api.Project
 import org.gradle.api.Plugin
 import org.apache.tools.ant.filters.ReplaceTokens
-import org.gradle.util.DeleteOnExit
 import org.linkedin.gradle.utils.JsonUtils
 import org.linkedin.gradle.utils.Utils
 
@@ -83,16 +80,22 @@ class SpecPlugin implements Plugin<Project>
     def tmpFolder = File.createTempFile("project-spec", "")
     tmpFolder.delete()
     tmpFolder.mkdirs()
-    DeleteOnExit.addFile(tmpFolder)
 
-    project.copy {
-      from(jsonProjectSpec) {
-        filter(ReplaceTokens, tokens: tokens)
+    try
+    {
+      project.copy {
+        from(jsonProjectSpec) {
+          filter(ReplaceTokens, tokens: tokens)
+        }
+        into tmpFolder
       }
-      into tmpFolder
-    }
 
-    return parseProjectSpec(new File(tmpFolder, 'project-spec.json'), false)
+      return parseProjectSpec(new File(tmpFolder, 'project-spec.json'), false)
+    }
+    finally
+    {
+      project.delete(tmpFolder)
+    }
   }
 
   protected void parseProjectSpec()

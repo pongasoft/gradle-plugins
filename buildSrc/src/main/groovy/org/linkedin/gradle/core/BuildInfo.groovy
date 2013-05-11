@@ -80,7 +80,9 @@ public class BuildInfo
       rootProject.logger.info(toInternalJson())
       if(!result.failure)
       {
-        computeBuildInfoFile(rootProject).text = toInternalJson()
+        def file = computeBuildInfoFile(rootProject)
+        file.parentFile.mkdirs()
+        file.text = toInternalJson()
       }
     }
   }

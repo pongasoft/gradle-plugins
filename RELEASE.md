@@ -1,3 +1,8 @@
+2.2.0 (2013/05/10)
+------------------
+* use of `gradle 1.6`
+* fixed small issue when build dir unavailable
+
 2.1.0 (2013/04/26)
 ------------------
 * Implemented [#1](https://github.com/pongasoft/gradle-plugins/issues/1): _Allow for "orphan" publishing_
