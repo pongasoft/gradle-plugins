@@ -36,6 +36,8 @@ allprojects {
 
 // we use git
 idea.project {
+  jdkName = spec.versions.jdk
+  languageLevel = spec.versions.jdk
   modules = modules.findAll {it.name != project.name}
   ipr.withXml { root ->
     root.asNode().component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git'
