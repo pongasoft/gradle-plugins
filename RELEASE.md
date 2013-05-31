@@ -1,3 +1,7 @@
+2.2.1 (2013/05/31)
+------------------
+* use gradle built-in tar task to ensure executable files maintain their execution flag
+
 2.2.0 (2013/05/10)
 ------------------
 * use of `gradle 1.6`

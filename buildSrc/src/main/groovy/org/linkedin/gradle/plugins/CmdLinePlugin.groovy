@@ -23,10 +23,11 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.tasks.bundling.Compression
+import org.gradle.api.tasks.bundling.Tar
 import org.linkedin.gradle.core.BuildInfo
-import org.linkedin.gradle.tasks.Tar
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.BasePlugin
+import org.linkedin.gradle.tasks.SingleArtifactTask
 
 class CmdLinePlugin implements Plugin<Project>
 {
@@ -148,19 +149,6 @@ class CmdLinePlugin implements Plugin<Project>
     }
 
     /********************************************************
-     * task: package
-     ********************************************************/
-    def packageTask =
-    project.task([dependsOn: 'package-assemble',
-                 type: Tar,
-                 description: "Create the package"],
-                 'package')
-
-    packageTask << {
-      logger."${convention.cmdlineLogLevel}"("Created package [${convention.packageFile}]")
-    }
-
-    /********************************************************
      * task: package-install
      ********************************************************/
     project.task([dependsOn: 'package',
@@ -210,16 +198,37 @@ class CmdLinePlugin implements Plugin<Project>
           packageAssembleTask.dependsOn(configuration)
       }
 
-      project.configure(packageTask) {
-        archiveSourcePath      = convention.assemblePackageFile
-        archiveDestinationPath = convention.packageFile
-        compression            = convention.compression
-        includeRoot            = convention.includeRoot
-        // setting release info for the package
-        artifactReleaseInfo    = [
-            name:           convention.basePackageName,
-            extension:      convention.packageExtension,
-            configurations: convention.artifactConfigurations
+      /********************************************************
+       * task: package
+       ********************************************************/
+      def packageTask =
+        project.task([dependsOn: 'package-assemble',
+                       type: Tar,
+                       description: "Create the package"],
+                     'package') {
+          def root = convention.includeRoot ?
+            convention.assemblePackageFile.parentFile :
+            convention.assemblePackageFile
+          def pattern = convention.includeRoot ? "${convention.assemblePackageFile.name}/**" : '**'
+
+          from root
+          include pattern
+          compression = convention.compression
+          destinationDir = convention.packageFile.parentFile
+          archiveName = convention.packageFile.name
+        }
+
+      packageTask << {
+        logger."${convention.cmdlineLogLevel}"("Created package [${convention.packageFile}]")
+      }
+
+      project.task([type: SingleArtifactTask, dependsOn: packageTask],
+                   "package-assemble-artifact") {
+        artifactFile        = convention.packageFile
+        artifactReleaseInfo = [
+          name:           convention.basePackageName,
+          extension:      convention.packageExtension,
+          configurations: convention.artifactConfigurations
         ]
       }
     }

@@ -16,4 +16,4 @@
 # the License.
 #
 
-echo "Hello World (test-2)"
+echo "Process conf"
