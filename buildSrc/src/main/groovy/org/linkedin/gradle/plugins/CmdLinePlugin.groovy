@@ -143,41 +143,7 @@ class CmdLinePlugin implements Plugin<Project>
 
       convention.folders?.each { project.mkdir(new File(convention.assemblePackageFile, it)) }
 
-      project.ant.chmod(dir: convention.assemblePackageFile, perm: 'ugo+rx', includes: '**/bin/*')
-
       logger."${convention.cmdlineLogLevel}"("Assembled package [${convention.assemblePackageFile}]")
-    }
-
-    /********************************************************
-     * task: package-install
-     ********************************************************/
-    project.task([dependsOn: 'package',
-                 description: "Install the package (locally)"],
-                 'package-install') << {
-
-      def installDir = convention.installDir
-
-      if(convention.includeRoot && installDir.name == convention.packageName)
-      {
-        installDir = installDir.parentFile
-      }
-
-      project.ant.untar(src: convention.packageFile,
-                        dest: installDir,
-                        compression: convention.compression.name().toLowerCase())
-
-      project.ant.chmod(dir: installDir, perm: 'ugo+rx', includes: '**/bin/*')
-
-      logger."${convention.cmdlineLogLevel}"("Installed in ${convention.installDir}")
-    }
-
-    /********************************************************
-     * task: package-clean-install
-     ********************************************************/
-    project.task([description :"Cleans the installed package"],
-                 'package-clean-install') << {
-      project.delete convention.installFile
-      logger."${convention.cmdlineLogLevel}"("Deleted [${convention.installFile}]")
     }
 
     /**
@@ -199,38 +165,72 @@ class CmdLinePlugin implements Plugin<Project>
       }
 
       /********************************************************
-       * task: package
+       * task: package-install
        ********************************************************/
-      def packageTask =
-        project.task([dependsOn: 'package-assemble',
-                       type: Tar,
-                       description: "Create the package"],
-                     'package') {
-          def root = convention.includeRoot ?
-            convention.assemblePackageFile.parentFile :
-            convention.assemblePackageFile
-          def pattern = convention.includeRoot ? "${convention.assemblePackageFile.name}/**" : '**'
+      if(!convention.noPackageInstallTask)
+      {
+        project.task([dependsOn: 'package',
+                       description: "Install the package (locally)"],
+                     'package-install') << {
 
-          from root
-          include pattern
-          compression = convention.compression
-          destinationDir = convention.packageFile.parentFile
-          archiveName = convention.packageFile.name
+          def installDir = convention.installDir
+
+          if(convention.includeRoot && installDir.name == convention.packageName)
+          {
+            installDir = installDir.parentFile
+          }
+
+          project.copy {
+            from project.tarTree(convention.packageFile)
+            into installDir
+          }
+
+          logger."${convention.cmdlineLogLevel}"("Installed in ${convention.installDir}")
         }
 
-      packageTask << {
-        logger."${convention.cmdlineLogLevel}"("Created package [${convention.packageFile}]")
+        /********************************************************
+         * task: package-clean-install
+         ********************************************************/
+        project.task([description :"Cleans the installed package"],
+                     'package-clean-install') << {
+          project.delete convention.installFile
+          logger."${convention.cmdlineLogLevel}"("Deleted [${convention.installFile}]")
+        }
+      }
+    }
+
+    /********************************************************
+     * task: package
+     ********************************************************/
+    def packageTask =
+      project.task([dependsOn: 'package-assemble',
+                     type: Tar,
+                     description: "Create the package"],
+                   'package') {
+        def root = convention.includeRoot ?
+          convention.assemblePackageFile.parentFile :
+          convention.assemblePackageFile
+        def pattern = convention.includeRoot ? "${convention.assemblePackageFile.name}/**" : '**'
+
+        from root
+        include pattern
+        compression = convention.compression
+        destinationDir = convention.packageFile.parentFile
+        archiveName = convention.packageFile.name
       }
 
-      project.task([type: SingleArtifactTask, dependsOn: packageTask],
-                   "package-assemble-artifact") {
-        artifactFile        = convention.packageFile
-        artifactReleaseInfo = [
-          name:           convention.basePackageName,
-          extension:      convention.packageExtension,
-          configurations: convention.artifactConfigurations
-        ]
-      }
+    packageTask << {
+      logger."${convention.cmdlineLogLevel}"("Created package [${convention.packageFile}]")
+    }
+
+    project.task([type: SingleArtifactTask, dependsOn: packageTask],
+                 "package-assemble-artifact") {
+      artifactFile        = convention.packageFile
+      artifactReleaseInfo = [
+        name:           convention.basePackageName,
+        extension:      convention.packageExtension,
+        configurations: convention.artifactConfigurations
+      ]
     }
   }
 
@@ -261,6 +261,7 @@ class CmdLinePluginConvention
   File installDir
   File installFile
   boolean noBuildInfo = false
+  boolean noPackageInstallTask = false
   def replacementTokens = [:]
 
   /**
