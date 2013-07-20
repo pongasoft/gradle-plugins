@@ -1,3 +1,7 @@
+2.2.2 (2013/07/20)
+------------------
+* allow to conditionally create package-install task
+
 2.2.1 (2013/05/31)
 ------------------
 * use gradle built-in tar task to ensure executable files maintain their execution flag
