@@ -197,40 +197,40 @@ class CmdLinePlugin implements Plugin<Project>
           logger."${convention.cmdlineLogLevel}"("Deleted [${convention.installFile}]")
         }
       }
-    }
 
-    /********************************************************
-     * task: package
-     ********************************************************/
-    def packageTask =
-      project.task([dependsOn: 'package-assemble',
-                     type: Tar,
-                     description: "Create the package"],
-                   'package') {
-        def root = convention.includeRoot ?
-          convention.assemblePackageFile.parentFile :
-          convention.assemblePackageFile
-        def pattern = convention.includeRoot ? "${convention.assemblePackageFile.name}/**" : '**'
+      /********************************************************
+       * task: package
+       ********************************************************/
+      def packageTask =
+        project.task([dependsOn: 'package-assemble',
+                       type: Tar,
+                       description: "Create the package"],
+                     'package') {
+          def root = convention.includeRoot ?
+            convention.assemblePackageFile.parentFile :
+            convention.assemblePackageFile
+          def pattern = convention.includeRoot ? "${convention.assemblePackageFile.name}/**" : '**'
 
-        from root
-        include pattern
-        compression = convention.compression
-        destinationDir = convention.packageFile.parentFile
-        archiveName = convention.packageFile.name
+          from root
+          include pattern
+          compression = convention.compression
+          destinationDir = convention.packageFile.parentFile
+          archiveName = convention.packageFile.name
+        }
+
+      packageTask << {
+        logger."${convention.cmdlineLogLevel}"("Created package [${convention.packageFile}]")
       }
 
-    packageTask << {
-      logger."${convention.cmdlineLogLevel}"("Created package [${convention.packageFile}]")
-    }
-
-    project.task([type: SingleArtifactTask, dependsOn: packageTask],
-                 "package-assemble-artifact") {
-      artifactFile        = convention.packageFile
-      artifactReleaseInfo = [
-        name:           convention.basePackageName,
-        extension:      convention.packageExtension,
-        configurations: convention.artifactConfigurations
-      ]
+      project.task([type: SingleArtifactTask, dependsOn: packageTask],
+                   "package-assemble-artifact") {
+        artifactFile        = convention.packageFile
+        artifactReleaseInfo = [
+          name:           convention.basePackageName,
+          extension:      convention.packageExtension,
+          configurations: convention.artifactConfigurations
+        ]
+      }
     }
   }
 
