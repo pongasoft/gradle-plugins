@@ -1,5 +1,6 @@
-2.2.2 (2013/07/20)
+2.2.3 (2013/07/20)
 ------------------
+* Fixed [#2](https://github.com/pongasoft/gradle-plugins/issues/2): _release task must build packages_
 * allow to conditionally create package-install task
 
 2.2.1 (2013/05/31)

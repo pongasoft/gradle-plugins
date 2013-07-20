@@ -17,7 +17,7 @@
 spec = [
   name: 'gradle-plugins',
   group: 'org.pongasoft',
-  version: '2.2.2',
+  version: '2.2.3',
 
   versions: [
     jdk: '1.7'
