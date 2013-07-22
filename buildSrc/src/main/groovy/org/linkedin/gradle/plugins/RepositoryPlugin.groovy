@@ -166,10 +166,15 @@ class RepositoryPlugin implements Plugin<Project>
   {
     if(BINTRAY_API_KEY == null)
     {
+      MissingConfigPropertyAction action =
+        project.gradle.startParameter.taskNames.disjoint(['release', 'publish']) ?
+          MissingConfigPropertyAction.NULL:
+          MissingConfigPropertyAction.PROMPT_PASSWORD
+
       BINTRAY_API_KEY = Utils.getConfigProperty(project,
                                                 "bintray.apiKey",
                                                 null,
-                                                MissingConfigPropertyAction.PROMPT_PASSWORD)
+                                                action)
     }
 
     return BINTRAY_API_KEY
