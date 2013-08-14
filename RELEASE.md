@@ -1,3 +1,7 @@
+2.2.4 (2013/08/13)
+------------------
+* use of `gradle 1.7`
+
 2.2.3 (2013/07/20)
 ------------------
 * Fixed [#2](https://github.com/pongasoft/gradle-plugins/issues/2): _release task must build packages_

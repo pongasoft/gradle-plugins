@@ -20,6 +20,7 @@ package org.linkedin.gradle.plugins
 import groovyx.net.http.HTTPBuilder
 import org.gradle.api.internal.ClosureBackedAction
 import org.gradle.util.ConfigureUtil
+import org.gradle.util.DeprecationLogger
 import org.linkedin.gradle.core.RepositoryHandlerConfigurationImpl
 
 import static groovyx.net.http.ContentType.JSON
@@ -319,8 +320,13 @@ class BintrayRepositoryExtension
     return pkgVersion ?: _parent?.getPkgVersion()
   }
 
+  /**
+   * @deprecated use jcenter() instead of bintray.jcenter() (native support since gradle 1.7).
+   */
+  @Deprecated
   RepositoryHandler jcenter()
   {
+    DeprecationLogger.nagUserWith("jcenter is now supported natively since gradle 1.7. Use jcenter() instead of bintray.jcenter().");
     RepositoryHandlerConfigurationImpl.configure {
       mavenRepo(url: 'http://jcenter.bintray.com')
     }

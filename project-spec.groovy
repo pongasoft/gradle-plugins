@@ -17,7 +17,7 @@
 spec = [
   name: 'gradle-plugins',
   group: 'org.pongasoft',
-  version: '2.2.3',
+  version: '2.2.4',
 
   versions: [
     jdk: '1.7'
@@ -27,7 +27,7 @@ spec = [
 
   // information about the build framework itself
   build: [
-    type: "gradle", // version 1.4
+    type: "gradle", // version 1.7
     commands: [
       "snapshot": "./gradlew <xxx>",
       "release": "./gradlew -Prelease=true <xxx>"

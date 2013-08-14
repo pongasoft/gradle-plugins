@@ -19,7 +19,7 @@
  * Repositories for build
  */
 allRepositories.build = {
-  bintray.jcenter()
+  jcenter()
   mavenCentral()
 }
 
