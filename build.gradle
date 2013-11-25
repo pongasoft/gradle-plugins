@@ -51,5 +51,5 @@ subprojects { p ->
 }
 
 wrapper {
-  gradleVersion = '1.7'
+  gradleVersion = '1.9'
 }

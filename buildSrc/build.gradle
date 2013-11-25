@@ -21,7 +21,9 @@ sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
 repositories {
-  mavenRepo(url: 'http://jcenter.bintray.com')
+  maven {
+    url 'http://jcenter.bintray.com'
+  }
   mavenCentral()
 }
 

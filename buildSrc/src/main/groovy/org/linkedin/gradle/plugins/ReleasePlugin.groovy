@@ -24,8 +24,8 @@ import org.gradle.api.internal.tasks.DefaultTaskDependency
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.BasePlugin
-import org.gradle.util.hash.HashUtil
-import org.gradle.util.hash.HashValue
+import org.gradle.internal.hash.HashUtil
+import org.gradle.internal.hash.HashValue
 import org.linkedin.gradle.core.ArtifactInfo
 import org.linkedin.gradle.core.BuildInfo
 import org.linkedin.gradle.core.PublishArtifactImpl

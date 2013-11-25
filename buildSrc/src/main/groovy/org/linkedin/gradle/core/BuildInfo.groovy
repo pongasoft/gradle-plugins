@@ -23,7 +23,7 @@ import org.gradle.initialization.BuildRequestMetaData
 import org.gradle.internal.jvm.Jvm
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.util.Clock
-import org.gradle.util.hash.HashUtil
+import org.gradle.internal.hash.HashUtil
 import org.linkedin.gradle.utils.JsonUtils
 
 import java.text.SimpleDateFormat
