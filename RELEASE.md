@@ -8,6 +8,7 @@
 
 2.2.4 (2013/08/13)
 ------------------
+* Fixed [#3](https://github.com/pongasoft/gradle-plugins/issues/3): _bintray api key prompted even when not needed_
 * use of `gradle 1.7`
 
 2.2.3 (2013/07/20)
