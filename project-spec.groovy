@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
- * Portions Copyright (c) 2013 Yan Pujante
+ * Portions Copyright (c) 2013-2014 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,7 @@
 spec = [
   name: 'gradle-plugins',
   group: 'org.pongasoft',
-  version: '2.2.5',
+  version: '2.2.6',
 
   versions: [
     jdk: '1.7'
@@ -27,7 +27,7 @@ spec = [
 
   // information about the build framework itself
   build: [
-    type: "gradle", // version 1.7
+    type: "gradle", // version 1.11
     commands: [
       "snapshot": "./gradlew <xxx>",
       "release": "./gradlew -Prelease=true <xxx>"
