@@ -17,7 +17,7 @@
 spec = [
   name: 'gradle-plugins',
   group: 'org.pongasoft',
-  version: '2.2.6',
+  version: '2.2.7',
 
   versions: [
     jdk: '1.7'
@@ -27,7 +27,7 @@ spec = [
 
   // information about the build framework itself
   build: [
-    type: "gradle", // version 1.11
+    type: "gradle", // version 2.3
     commands: [
       "snapshot": "./gradlew <xxx>",
       "release": "./gradlew -Prelease=true <xxx>"
@@ -42,7 +42,7 @@ spec.scm = 'git'
  * External dependencies
  */
 spec.external = [
-  httpBuilder: "org.codehaus.groovy.modules.http-builder:http-builder:0.6"
+  httpBuilder: "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
 ]
 
 // information about the bintray distribution

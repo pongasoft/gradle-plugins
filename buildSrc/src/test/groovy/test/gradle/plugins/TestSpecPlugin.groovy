@@ -30,7 +30,7 @@ public class TestSpecPlugin extends GroovyTestCase
     ProjectBuilder builder = ProjectBuilder.builder()
     builder.withProjectDir(new File("src/test/resources/TestSpecPlugin/testJson"))
     Project project = builder.build()
-    project.release = true
+    project.ext.release = true
     project.apply plugin: SpecPlugin
     assertEquals('gradle-plugins', project.spec.name)
     assertEquals('org.linkedin', project.spec.group)
@@ -52,7 +52,7 @@ public class TestSpecPlugin extends GroovyTestCase
     ProjectBuilder builder = ProjectBuilder.builder()
     builder.withProjectDir(new File("src/test/resources/TestSpecPlugin/testGroovy"))
     Project project = builder.build()
-    project.release = true
+    project.ext.release = true
     project.apply plugin: SpecPlugin
     assertEquals('gradle-plugins', project.spec.name)
     assertEquals('org.linkedin', project.spec.group)
@@ -75,7 +75,7 @@ public class TestSpecPlugin extends GroovyTestCase
     ProjectBuilder builder = ProjectBuilder.builder()
     builder.withProjectDir(new File("src/test/resources/TestSpecPlugin/testJson"))
     Project project = builder.build()
-    project.release = true
+    project.ext.release = true
     project.apply plugin: SpecPlugin
     assertEquals('1.0.0', project.spec.version)
 
@@ -90,8 +90,8 @@ public class TestSpecPlugin extends GroovyTestCase
     builder = ProjectBuilder.builder()
     builder.withProjectDir(new File("src/test/resources/TestSpecPlugin/testVersion"))
     project = builder.build()
-    project.release = true
-    shouldFail(IllegalStateException) { project.apply plugin: SpecPlugin }
+    project.ext.release = true
+    shouldFailWithCause(IllegalStateException.class) { project.apply plugin: SpecPlugin }
 
     // when nothing provided => version should be snapshot
     builder = ProjectBuilder.builder()
