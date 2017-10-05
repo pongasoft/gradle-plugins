@@ -134,8 +134,10 @@ class RepositoryPlugin implements Plugin<Project>
     // add a task to create the (missing) packages
       if(repositoryExtensions)
       {
-        project.task([description: "Ensures that bintray packages are created"], 'createBintrayPackages') << {
-          repositoryExtensions.each { ext -> createBintrayPackages(project, ext) }
+        project.task([description: "Ensures that bintray packages are created"], 'createBintrayPackages') {
+          doLast {
+            repositoryExtensions.each { ext -> createBintrayPackages(project, ext) }
+          }
         }
       }
     }
@@ -328,7 +330,9 @@ class BintrayRepositoryExtension
   {
     DeprecationLogger.nagUserWith("jcenter is now supported natively since gradle 1.7. Use jcenter() instead of bintray.jcenter().");
     RepositoryHandlerConfigurationImpl.configure {
-      mavenRepo(url: 'http://jcenter.bintray.com')
+      maven {
+        url 'http://jcenter.bintray.com'
+      }
     }
   }
 

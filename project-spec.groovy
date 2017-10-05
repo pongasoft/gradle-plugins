@@ -17,10 +17,10 @@
 spec = [
   name: 'gradle-plugins',
   group: 'org.pongasoft',
-  version: '2.2.8',
+  version: '2.2.9',
 
   versions: [
-    jdk: '1.7'
+    jdk: '1.8'
   ],
 
   artifacts: ["a1", "a2"],

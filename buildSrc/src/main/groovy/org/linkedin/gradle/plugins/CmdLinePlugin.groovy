@@ -53,97 +53,98 @@ class CmdLinePlugin implements Plugin<Project>
      * task: package-assemble
      ********************************************************/
     def packageAssembleTask =
-    project.task([description: "Assembles the package (exploded)"], 'package-assemble') << {
-
-      convention.resourcesConfigurations?.each { configuration, dir ->
-        configuration = findConfiguration(configuration)
-        if(dir instanceof String)
-        {
-          dir = new File(convention.assemblePackageFile, dir)
-        }
-        if(configuration?.resolve())
-        {
-          project.copy {
-            from configuration.resolve()
-            into dir
-          }
-        }
-        
-        if(configuration?.artifacts)
-        {
-          project.copy {
-            from configuration.artifacts.file
-            into dir
-          }
-        }
-      }
-
-      convention.resources?.each { resource ->
-        def resourceInto = convention.assemblePackageFile
-        def replaceTokens = true
-        def replaceTokensInclude = '**/*'
-        def replaceTokensExclude = null
-        def resourceFrom = null
-
-        if(resource instanceof Map)
-        {
-          resourceInto = resource.into ?: resourceInto
-          replaceTokens = resource.replaceTokens == null ? replaceTokens : resource.replaceTokens
-          replaceTokensInclude = resource.replaceTokensInclude
-          replaceTokensExclude = resource.replaceTokensExclude
-          resourceFrom = resource.from
-        }
-        else
-        {
-          resourceFrom = resource
-        }
-
-        if(!resourceFrom)
-        {
-          throw new IllegalArgumentException("missing 'from' for ${resource}")
-        }
-
-        project.copy {
-          if(replaceTokens && convention.replacementTokens)
+    project.task([description: "Assembles the package (exploded)"], 'package-assemble') {
+      doLast {
+        convention.resourcesConfigurations?.each { configuration, dir ->
+          configuration = findConfiguration(configuration)
+          if(dir instanceof String)
           {
-            // copy and replace tokens for only the ones that need to be replaced
-            from(resourceFrom) {
-              if(replaceTokensInclude)
-                include replaceTokensInclude
-              if(replaceTokensExclude)
-                exclude replaceTokensExclude
-              filter(tokens: convention.replacementTokens, ReplaceTokens)
+            dir = new File(convention.assemblePackageFile, dir)
+          }
+          if(configuration?.resolve())
+          {
+            project.copy {
+              from configuration.resolve()
+              into dir
             }
-            // copy without replacing tokens the opposite
-            from(resourceFrom) {
-              if(replaceTokensInclude)
-                exclude replaceTokensInclude
-              if(replaceTokensExclude)
-                include replaceTokensExclude
+          }
+
+          if(configuration?.artifacts)
+          {
+            project.copy {
+              from configuration.artifacts.file
+              into dir
             }
+          }
+        }
+
+        convention.resources?.each { resource ->
+          def resourceInto = convention.assemblePackageFile
+          def replaceTokens = true
+          def replaceTokensInclude = '**/*'
+          def replaceTokensExclude = null
+          def resourceFrom = null
+
+          if(resource instanceof Map)
+          {
+            resourceInto = resource.into ?: resourceInto
+            replaceTokens = resource.replaceTokens == null ? replaceTokens : resource.replaceTokens
+            replaceTokensInclude = resource.replaceTokensInclude
+            replaceTokensExclude = resource.replaceTokensExclude
+            resourceFrom = resource.from
           }
           else
           {
-            // copy everything... no tokens to replace
-            from(resourceFrom)
+            resourceFrom = resource
           }
 
-          // destination
-          into resourceInto
+          if(!resourceFrom)
+          {
+            throw new IllegalArgumentException("missing 'from' for ${resource}")
+          }
+
+          project.copy {
+            if(replaceTokens && convention.replacementTokens)
+            {
+              // copy and replace tokens for only the ones that need to be replaced
+              from(resourceFrom) {
+                if(replaceTokensInclude)
+                  include replaceTokensInclude
+                if(replaceTokensExclude)
+                  exclude replaceTokensExclude
+                filter(tokens: convention.replacementTokens, ReplaceTokens)
+              }
+              // copy without replacing tokens the opposite
+              from(resourceFrom) {
+                if(replaceTokensInclude)
+                  exclude replaceTokensInclude
+                if(replaceTokensExclude)
+                  include replaceTokensExclude
+              }
+            }
+            else
+            {
+              // copy everything... no tokens to replace
+              from(resourceFrom)
+            }
+
+            // destination
+            into resourceInto
+          }
         }
+
+        // adding build info to the root of the package
+        if(!convention.noBuildInfo)
+        {
+          BuildInfo.saveToExternalFileIfExists(project,
+                                               new File(convention.assemblePackageFile,
+                                                        "build.info"))
+        }
+
+        convention.folders?.each { project.mkdir(new File(convention.assemblePackageFile, it)) }
+
+        logger."${convention.cmdlineLogLevel}"("Assembled package [${convention.assemblePackageFile}]")
       }
-
-      // adding build info to the root of the package
-      if(!convention.noBuildInfo)
-      {
-        BuildInfo.saveToExternalFileIfExists(project,
-                                             new File(convention.assemblePackageFile,
-                                                      "build.info"))
-      }
-
-      convention.folders?.each { project.mkdir(new File(convention.assemblePackageFile, it)) }
-
-      logger."${convention.cmdlineLogLevel}"("Assembled package [${convention.assemblePackageFile}]")
     }
 
     /**
@@ -171,30 +172,34 @@ class CmdLinePlugin implements Plugin<Project>
       {
         project.task([dependsOn: 'package',
                        description: "Install the package (locally)"],
-                     'package-install') << {
+                     'package-install') {
 
-          def installDir = convention.installDir
+          doLast {
+            def installDir = convention.installDir
 
-          if(convention.includeRoot && installDir.name == convention.packageName)
-          {
-            installDir = installDir.parentFile
+            if(convention.includeRoot && installDir.name == convention.packageName)
+            {
+              installDir = installDir.parentFile
+            }
+
+            project.copy {
+              from project.tarTree(convention.packageFile)
+              into installDir
+            }
+
+            logger."${convention.cmdlineLogLevel}"("Installed in ${convention.installDir}")
           }
-
-          project.copy {
-            from project.tarTree(convention.packageFile)
-            into installDir
-          }
-
-          logger."${convention.cmdlineLogLevel}"("Installed in ${convention.installDir}")
         }
 
         /********************************************************
          * task: package-clean-install
          ********************************************************/
         project.task([description :"Cleans the installed package"],
-                     'package-clean-install') << {
-          project.delete convention.installFile
-          logger."${convention.cmdlineLogLevel}"("Deleted [${convention.installFile}]")
+                     'package-clean-install') {
+          doLast {
+            project.delete convention.installFile
+            logger."${convention.cmdlineLogLevel}"("Deleted [${convention.installFile}]")
+          }
         }
       }
 
@@ -218,7 +223,7 @@ class CmdLinePlugin implements Plugin<Project>
           archiveName = convention.packageFile.name
         }
 
-      packageTask << {
+      packageTask.doLast {
         logger."${convention.cmdlineLogLevel}"("Created package [${convention.packageFile}]")
       }
 

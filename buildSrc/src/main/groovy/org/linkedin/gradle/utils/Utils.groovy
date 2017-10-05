@@ -357,4 +357,21 @@ class Utils
 
     throw new IllegalArgumentException("cannot convert ${s} to a boolean")
   }
+
+  /**
+   * Removed from Gradle... copied back...  */
+  private static final long MS_PER_MINUTE = 60000;
+  private static final long MS_PER_HOUR = MS_PER_MINUTE * 60;
+
+  public static String prettyTime(long timeInMs) {
+    StringBuilder result = new StringBuilder();
+    if (timeInMs > MS_PER_HOUR) {
+      result.append(timeInMs / MS_PER_HOUR).append(" hrs ");
+    }
+    if (timeInMs > MS_PER_MINUTE) {
+      result.append((timeInMs % MS_PER_HOUR) / MS_PER_MINUTE).append(" mins ");
+    }
+    result.append((timeInMs % MS_PER_MINUTE) / 1000.0).append(" secs");
+    return result.toString();
+  }
 }

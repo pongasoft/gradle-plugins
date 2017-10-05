@@ -25,6 +25,7 @@ import org.gradle.internal.os.OperatingSystem
 import org.gradle.util.Clock
 import org.gradle.internal.hash.HashUtil
 import org.linkedin.gradle.utils.JsonUtils
+import org.linkedin.gradle.utils.Utils
 
 import java.text.SimpleDateFormat
 
@@ -76,7 +77,7 @@ public class BuildInfo
 
     rootProject.gradle.buildFinished { BuildResult result ->
       buildDuration = System.currentTimeMillis() - buildTime
-      buildDurationString = Clock.prettyTime(buildDuration)
+      buildDurationString = Utils.prettyTime(buildDuration)
       rootProject.logger.info(toInternalJson())
       if(!result.failure)
       {
