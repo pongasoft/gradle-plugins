@@ -1,9 +1,9 @@
-1. Introduction
-===============
+1 - Introduction
+================
 This project contains a set of useful gradle plugins
 
-2. Usage
-========
+2 - Usage
+=========
 In order to use the plugins you need to add this to your build script:
 
         buildscript {
@@ -15,11 +15,11 @@ In order to use the plugins you need to add this to your build script:
           }
         }
 
-3. Plugins
-==========
+3 - Plugins
+===========
   
-3.1 `org.linkedin.userConfig`
------------------------------
+3.1 - `org.linkedin.userConfig`
+-------------------------------
 `org.linkedin.userConfig` is a plugin which attempts to load user configuration (for the gradle
 build) in the following files (values read last overrides previous values) and make it available
 to all gradle build files as a `userConfig` object (instance of `groovy.util.ConfigObject`). 
@@ -42,8 +42,8 @@ entire list).
 
 This plugin should be used only in the root project when doing a multi project build.
 
-3.2 `org.linkedin.spec`
------------------------
+3.2 - `org.linkedin.spec`
+-------------------------
 `org.linkedin.spec` is a plugin which reads a file called `project-spec.groovy` (or
 `project-spec.json`) and makes it available in all build files as a `spec` object (instance of
 `java.util.Map`). This plugin automatically handles `spec.version` in this fashion: always force
@@ -51,8 +51,8 @@ snapshot mode (meaning version ends with `-SNAPSHOT`) unless `-Prelease=true` is
 running the build. See an [example](https://github.com/pongasoft/gradle-plugins/blob/master/project-spec.groovy) of
 this file and how it is being used in this project itself!
 
-3.3. `org.linkedin.repository`
-------------------------------
+3.3. - `org.linkedin.repository`
+--------------------------------
 `org.linkedin.repository` is a plugin which allows you to externalize repository configuration
 and override it with your own defaults (for example if you do not want to use maven central). In a
 similar fashion to the `org.linkedin.userConfig` plugin, it reads an optional set of files (values
@@ -133,8 +133,8 @@ The `bintray` extension is configured this way for any undefined property:
 
 Check the `repositories.gradle` file that comes with this project for examples.
 
-3.4 `org.linkedin.release`
---------------------------
+3.4 - `org.linkedin.release`
+----------------------------
 `org.linkedin.release` is a plugin which adds `release` and `publish` tasks. `release` is supposed
 to build and release in a local repository. `publish` is supposed to publish in a remote
 repository. By default, `publish` will publish (without rebuilding!) what has been released when
@@ -167,8 +167,8 @@ per project basis:
 
 This plugin is used in every project that needs to be released.
 
-3.5 `org.linkedin.cmdline`
---------------------------
+3.5 - `org.linkedin.cmdline`
+----------------------------
 `org.linkedin.cmdline` is a plugin which adds the following tasks:
 
 * `package-assemble`: Assembles the package (exploded)
@@ -211,8 +211,8 @@ the root of the package. To disable this feature use:
           noBuildInfo = true
         }
 
-3.6 `org.pongasoft.buildInfo`
------------------------------
+3.6 - `org.pongasoft.buildInfo`
+-------------------------------
 `org.pongasoft.buildInfo` is a plugin which adds the property `buildInfo` to the root project and
 generates a file (at the root of the build) when the build completes. The content of this file is
 a json representation of the `buildInfo`. Example of content:
@@ -234,8 +234,8 @@ a json representation of the `buildInfo`. Example of content:
             ]
         }
 
-4. Compilation
-==============
+4 - Compilation
+===============
 In order to compile the code you need
 
 * java 1.7+
@@ -246,8 +246,8 @@ At the top simply run
 
 which should compile and run all the tests.
 
-5. Directory structure
-======================
+5 - Directory structure
+=======================
 * `buildSrc`
   *  Contains the code of the plugins
 
@@ -255,8 +255,8 @@ which should compile and run all the tests.
   * Simple wrapper which uses the plugin themselves to recompile them and make them available for
 release/publish
 
-6. Build configuration
-======================
+6 - Build configuration
+=======================
 The project uses the `org.linkedin.userConfig` plugin and as such can be configured the way
 described in the plugin
 
