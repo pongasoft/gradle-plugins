@@ -23,7 +23,7 @@ In order to use the plugins you need to add this to your build script:
 `org.linkedin.userConfig` is a plugin which attempts to load user configuration (for the gradle
 build) in the following files (values read last overrides previous values) and make it available
 to all gradle build files as a `userConfig` object (instance of `groovy.util.ConfigObject`). 
-Check [groovy.util.ConfigSlurper](http://groovy.codehaus.org/gapi/groovy/util/ConfigSlurper.html) for details on the syntax.
+Check [groovy.util.ConfigSlurper](http://groovy-lang.org/gapi/groovy/util/ConfigSlurper.html) for details on the syntax.
 
         userConfig.properties
         userConfig-${project.group}.properties
