@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
- * Portions Copyright (c) 2013-2014 Yan Pujante
+ * Portions Copyright (c) 2013-2021 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,7 @@
 spec = [
   name: 'gradle-plugins',
   group: 'org.pongasoft',
-  version: '2.2.9',
+  version: '3.0.0',
 
   versions: [
     jdk: '1.8'
@@ -27,7 +27,7 @@ spec = [
 
   // information about the build framework itself
   build: [
-    type: "gradle", // version 2.3
+    type: "gradle", // version 6.8
     commands: [
       "snapshot": "./gradlew <xxx>",
       "release": "./gradlew -Prelease=true <xxx>"
@@ -42,7 +42,8 @@ spec.scm = 'git'
  * External dependencies
  */
 spec.external = [
-  httpBuilder: "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
+  jupiterAPI: "org.junit.jupiter:junit-jupiter-api:5.6.0",
+  jupiterEngine: "org.junit.jupiter:junit-jupiter-engine"
 ]
 
 // information about the bintray distribution

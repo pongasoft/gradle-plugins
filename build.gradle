@@ -16,40 +16,25 @@
  * the License.
  */
 
-/**
- * This project is tricky. It relies on the buildSrc feature of gradle to compile and use the
- * plugin before invoking this build. Then the plugin itself gets recompiled as part of this build
- * so that it can be published using the normal flow. This build uses the plugin it publishes!
- */
-apply plugin: 'org.linkedin.userConfig'
-apply plugin: 'org.linkedin.spec'
+ /**
+  * This project is tricky. It relies on the buildSrc feature of gradle to compile and use the
+  * plugin before invoking this build. Then the plugin itself gets recompiled as part of this build
+  * so that it can be published using the normal flow. This build uses the plugin it publishes!
+  */
+ apply plugin: 'org.linkedin.userConfig'
+ apply plugin: 'org.linkedin.spec'
 
-ext {
-  topBuildDir = userConfig.top.build.dir ?: "${rootDir}/out/build"
-}
+ ext {
+   topBuildDir = userConfig.top.build.dir ?: "${rootDir}/out/build"
+ }
 
-allprojects {
-  apply plugin: 'idea'
-  group = spec.group
-  version = spec.version
-}
-
-// we use git
-idea.project {
-  jdkName = spec.versions.jdk
-  languageLevel = spec.versions.jdk
-  modules = modules.findAll {it.name != project.name}
-  ipr.withXml { root ->
-    root.asNode().component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git'
-  }
-}
+ allprojects {
+   group = spec.group
+   version = spec.version
+ }
 
 subprojects { p ->
   apply plugin: 'maven'
   apply plugin: 'org.linkedin.repository'
   buildDir = "${topBuildDir}${project.path.replace(':','/')}".toString()
-}
-
-wrapper {
-  gradleVersion = '4.2'
 }

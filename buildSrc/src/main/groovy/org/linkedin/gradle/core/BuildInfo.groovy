@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 Yan Pujante
+ * Copyright (c) 2013-2021 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,6 @@ import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.initialization.BuildRequestMetaData
 import org.gradle.internal.jvm.Jvm
 import org.gradle.internal.os.OperatingSystem
-import org.gradle.util.Clock
 import org.gradle.internal.hash.HashUtil
 import org.linkedin.gradle.utils.JsonUtils
 import org.linkedin.gradle.utils.Utils
@@ -68,8 +67,7 @@ public class BuildInfo
     jvm = Jvm.current().toString()
     os = OperatingSystem.current().toString()
 
-    Clock clock = rootProject.gradle.services.get(BuildRequestMetaData).buildTimeClock
-    buildTime = clock.startTime
+    buildTime = rootProject.gradle.services.get(BuildRequestMetaData).startTime
     buildTimeString = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss z").format(new Date(buildTime))
 
     buildTasks = rootProject.gradle.startParameter.taskNames

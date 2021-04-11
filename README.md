@@ -7,11 +7,8 @@ This project contains a set of useful gradle plugins
 In order to use the plugins you need to add this to your build script:
 
         buildscript {
-          repositories {
-             mavenRepo(url: 'http://jcenter.bintray.com')
-          }
           dependencies {
-            classpath 'org.pongasoft:org.linkedin.gradle-plugins:1.7.0'
+            classpath 'org.pongasoft:org.linkedin.gradle-plugins:2.2.10'
           }
         }
 
@@ -91,45 +88,7 @@ You can define any repository name and they are made available into any build sc
         allRepositories.build.configure()
 
 
-This plugin supports bintray by using the syntax `allRepositories.bintray.<xxx>` (for publishing)
-and can use `org.linkedin.spec` and `org.linkedin.userConfig` to configure it (typically
-your `bintray.apiKey` would live in your `${user.home}/.userConfig.properties` file and the rest
-of the configuration in `project-spec.groovy`). If the `apiKey` is not found, then it will be
-prompted! This plugin adds the `bintray` extension for easy configurations:
-
-        allRepositories.build = {
-          bintray.jcenter()
-        }
-
-        def pomConfig = {
-          // ...
-        }
-
-        allRepositories.bintray.binaries = bintray.binaries.mavenRepo {
-          pom.whenConfigured(pomConfig)
-        }
-
-The `binaries` repository gets configured this way in `project-spec.groovy:
-
-        spec.bintray = [
-          apiBaseUrl: 'https://bintray.com/api/v1',
-          username: 'yan',
-          pkgOrganization: 'pongasoft',
-          repositories: [
-            binaries: [
-              pkgRepository: 'binaries',
-              pkgName: spec.name
-            ],
-        ]
-
-The `bintray` extension is configured this way for any undefined property:
-
-        apiBaseUrl -> 'https://bintray.com/api/v1'
-        username -> System.getProperty("user.name")
-        apiKey -> prompted on the command line
-        pkgOrganization -> username
-        pkgRepository -> project.rootProject.group
-        pkgName -> project.rootProject.name
+This plugin no longer supports bintray following the [JFrog sunsetting bintray](https://jfrog.com/blog/into-the-sunset-bintray-jcenter-gocenter-and-chartcenter/)
 
 Check the `repositories.gradle` file that comes with this project for examples.
 

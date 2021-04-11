@@ -15,15 +15,65 @@
  * the License.
  */
 
-apply plugin: 'org.linkedin.release'
+//plugins {
+//    `java-gradle-plugin`
+//    groovy
+//    id("org.linkedin.release")
+//}
+//
+//allRepositories.build.configure()
+//
+//dependencies {
+//    testImplementation(spec.external.jupiterAPI)
+//    testRuntimeOnly(spec.external.jupiterEngine)
+//}
+//
+//tasks.getByName<Test>("test") {
+//    useJUnitPlatform()
+//}
+//
+//// val groovydocTask: Groovydoc = tasks.findByName("groovydoc")!! as Groovydoc
+//
+//// tasks {
+////     register<Jar>("groovydocJar") {
+////         archiveClassifier.set("groovydoc")
+////         from(groovydocTask.destinationDir)
+////         dependsOn(groovydocTask)
+////     }
+//// }
+//
+//// java {
+////     withSourcesJar()
+//// }
+//
+//val orgLinkedInPlugins = arrayOf("cmdline", "release", "repository", "spec", "userConfig", "buildInfo")
+//
+//gradlePlugin {
+//    plugins {
+//        orgLinkedInPlugins.forEach { name ->
+//            create("${name}Plugin") {
+//                id = "org.linkedin.$name"
+//                implementationClass = "org.linkedin.gradle.plugins.${name.capitalize()}Plugin"
+//            }
+//        }
+//    }
+//}
+
+apply plugin: 'java-gradle-plugin'
 apply plugin: 'groovy'
+apply plugin: 'org.linkedin.release'
 
 allRepositories.build.configure()
 
+// dependencies {
+//   compile gradleApi()
+//   compile spec.external.httpBuilder
+//   compile localGroovy()
+// }
+
 dependencies {
-  compile gradleApi()
-  compile spec.external.httpBuilder
-  compile localGroovy()
+    testImplementation(spec.external.jupiterAPI)
+    testRuntimeOnly(spec.external.jupiterEngine)
 }
 
 sourceSets {
@@ -37,8 +87,8 @@ sourceSets {
   }
 }
 
-idea.module {
-    contentRoot = rootProject.file('buildSrc')
-    excludeDirs += rootProject.file('buildSrc/build')
-    excludeDirs += rootProject.file('buildSrc/.gradle')
-}
+// idea.module {
+//     contentRoot = rootProject.file('buildSrc')
+//     excludeDirs += rootProject.file('buildSrc/build')
+//     excludeDirs += rootProject.file('buildSrc/.gradle')
+// }

@@ -18,6 +18,7 @@
 package org.linkedin.gradle.tasks
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.OutputFile
 import org.linkedin.gradle.core.PublishArtifactImpl
 import org.linkedin.gradle.plugins.ReleasePlugin
 import org.linkedin.gradle.core.ArtifactInfo
@@ -55,5 +56,6 @@ abstract class ReleasableArtifactTask extends DefaultTask
     return res
   }
 
+  @OutputFile
   abstract File getArtifactFile()
 }

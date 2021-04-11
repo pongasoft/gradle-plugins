@@ -7,3 +7,5 @@ buildSrc/build
 out
 build/
 buildSrc/src/test/resources/TestSpecPlugin/testGroovy/userHome
+buildSrc/src/test/resources/TestSpecPlugin/testJson/userHome
+buildSrc/src/test/resources/TestSpecPlugin/testVersion/userHome

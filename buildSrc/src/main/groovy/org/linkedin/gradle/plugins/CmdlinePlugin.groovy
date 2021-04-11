@@ -29,7 +29,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.BasePlugin
 import org.linkedin.gradle.tasks.SingleArtifactTask
 
-class CmdLinePlugin implements Plugin<Project>
+class CmdlinePlugin implements Plugin<Project>
 {
   public static final String LIB_CONFIGURATION = 'lib'
 

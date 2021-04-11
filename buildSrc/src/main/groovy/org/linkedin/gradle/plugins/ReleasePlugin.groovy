@@ -192,7 +192,7 @@ class ReleasePlugin implements Plugin<Project>
          * task: javadocJar
          ********************************************************/
         project.task([type: Jar, dependsOn: "javadoc"], 'javadocJar') {
-            classifier = 'javadoc'
+            archiveClassifier.set('javadoc')
             from project.javadoc.destinationDir
         }
 
@@ -206,7 +206,7 @@ class ReleasePlugin implements Plugin<Project>
          * task: groovydocJar
          ********************************************************/
         project.task([type: Jar, dependsOn: "groovydoc"], 'groovydocJar') {
-            classifier = 'groovydoc'
+            archiveClassifier.set('groovydoc')
             from project.groovydoc.destinationDir
         }
 
@@ -219,7 +219,7 @@ class ReleasePlugin implements Plugin<Project>
          * task: sourcesJar
          ********************************************************/
         project.task([type: Jar, dependsOn: "classes"], 'sourcesJar') {
-            classifier = 'sources'
+            archiveClassifier.set('sources')
             from project.sourceSets.main.allSource
         }
       }

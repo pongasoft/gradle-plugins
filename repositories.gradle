@@ -19,7 +19,6 @@
  * Repositories for build
  */
 allRepositories.build = {
-  jcenter()
   mavenCentral()
 }
 
@@ -77,18 +76,18 @@ allRepositories.snapshotPublish = {
   }
 }
 
-/**
- * Bintray binaries / maven style
- */
-allRepositories.binaries = bintray.binaries.mavenRepo {
-  pom.whenConfigured(pomConfig)
-}
-
-/**
- * Bintray distributions (note that there are no distributions in this project... used for testing
- * only (see test-2)
- */
-//allRepositories.distributions = bintray.distributions.ivyRepo()
-
-// by default all modules are published into bintray.binaries (can be overriden in a given module)
-allRepositories.publish = allRepositories.binaries
+///**
+// * Bintray binaries / maven style
+// */
+//allRepositories.binaries = bintray.binaries.mavenRepo {
+//  pom.whenConfigured(pomConfig)
+//}
+//
+///**
+// * Bintray distributions (note that there are no distributions in this project... used for testing
+// * only (see test-2)
+// */
+////allRepositories.distributions = bintray.distributions.ivyRepo()
+//
+//// by default all modules are published into bintray.binaries (can be overriden in a given module)
+//allRepositories.publish = allRepositories.binaries
