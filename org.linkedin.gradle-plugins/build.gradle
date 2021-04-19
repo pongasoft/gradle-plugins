@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
- * Portions Copyright (c) 2013 Yan Pujante
+ * Portions Copyright (c) 2013-2021 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,66 +15,23 @@
  * the License.
  */
 
-//plugins {
-//    `java-gradle-plugin`
-//    groovy
-//    id("org.linkedin.release")
-//}
-//
-//allRepositories.build.configure()
-//
-//dependencies {
-//    testImplementation(spec.external.jupiterAPI)
-//    testRuntimeOnly(spec.external.jupiterEngine)
-//}
-//
-//tasks.getByName<Test>("test") {
-//    useJUnitPlatform()
-//}
-//
-//// val groovydocTask: Groovydoc = tasks.findByName("groovydoc")!! as Groovydoc
-//
-//// tasks {
-////     register<Jar>("groovydocJar") {
-////         archiveClassifier.set("groovydoc")
-////         from(groovydocTask.destinationDir)
-////         dependsOn(groovydocTask)
-////     }
-//// }
-//
-//// java {
-////     withSourcesJar()
-//// }
-//
-//val orgLinkedInPlugins = arrayOf("cmdline", "release", "repository", "spec", "userConfig", "buildInfo")
-//
-//gradlePlugin {
-//    plugins {
-//        orgLinkedInPlugins.forEach { name ->
-//            create("${name}Plugin") {
-//                id = "org.linkedin.$name"
-//                implementationClass = "org.linkedin.gradle.plugins.${name.capitalize()}Plugin"
-//            }
-//        }
-//    }
-//}
-
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'groovy'
 apply plugin: 'org.linkedin.release'
 
 allRepositories.build.configure()
 
-// dependencies {
-//   compile gradleApi()
-//   compile spec.external.httpBuilder
-//   compile localGroovy()
-// }
-
 dependencies {
     testImplementation(spec.external.jupiterAPI)
     testRuntimeOnly(spec.external.jupiterEngine)
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(spec.versions.jdk)
+    }
+}
+
 
 sourceSets {
   main {
@@ -87,8 +44,15 @@ sourceSets {
   }
 }
 
-// idea.module {
-//     contentRoot = rootProject.file('buildSrc')
-//     excludeDirs += rootProject.file('buildSrc/build')
-//     excludeDirs += rootProject.file('buildSrc/.gradle')
-// }
+def orgLinkedInPlugins = ["cmdline", "release", "repository", "spec", "userConfig", "buildInfo"]
+
+gradlePlugin {
+    plugins {
+        orgLinkedInPlugins.forEach { name ->
+            create("${name}Plugin") {
+                id = "org.linkedin.$name"
+                implementationClass = "org.linkedin.gradle.plugins.${name.capitalize()}Plugin"
+            }
+        }
+    }
+}

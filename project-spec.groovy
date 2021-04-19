@@ -20,7 +20,7 @@ spec = [
   version: '3.0.0',
 
   versions: [
-    jdk: '1.8'
+    jdk: '8'
   ],
 
   artifacts: ["a1", "a2"],
