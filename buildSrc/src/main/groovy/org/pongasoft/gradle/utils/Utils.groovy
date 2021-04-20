@@ -15,7 +15,7 @@
  * the License.
  */
 
-package org.linkedin.gradle.utils
+package org.pongasoft.gradle.utils
 
 import org.gradle.api.Project
 import org.gradle.api.resources.MissingResourceException
@@ -102,7 +102,7 @@ class Utils
   }
 
   /**
-   * @return a (optional) boolean configuration property
+   * @return a (optional) boolean configuration project property
    */
   static boolean getConfigBooleanProjectProperty(Project project,
                                                  String propertyName,
@@ -184,7 +184,6 @@ class Utils
       default:
         throw new RuntimeException('not reached')
     }
-
   }
 
   /**
@@ -204,9 +203,13 @@ class Utils
     // make sure it is a string
     dottedConfigPropertyName = dottedConfigPropertyName.toString()
 
+    // 1. check a project property
+    if(project.hasProperty(dottedConfigPropertyName))
+      return project."${dottedConfigPropertyName}"
+
     def configPropertyNameParts = dottedConfigPropertyName.split('\\.')
 
-    // 1. we check user config
+    // 2. we check user config
     if(project.hasProperty('userConfig'))
     {
       def userConfig = project.userConfig
@@ -227,7 +230,7 @@ class Utils
         return configProperty
     }
 
-    // 2. we check spec
+    // 3. we check spec
     if(project.hasProperty('spec'))
     {
       def spec = project.spec

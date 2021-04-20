@@ -48,14 +48,14 @@ repositories {
 //     withSourcesJar()
 // }
 
-val orgLinkedInPlugins = arrayOf("cmdline", "release", "repository", "spec", "userConfig", "buildInfo")
+val orgPongasoftPlugins = arrayOf("cmdline", "release", "repository", "spec", "userConfig", "buildInfo", "signing")
 
 gradlePlugin {
     plugins {
-        orgLinkedInPlugins.forEach { name ->
+        orgPongasoftPlugins.forEach { name ->
             create("${name}Plugin") {
-                id = "org.linkedin.$name"
-                implementationClass = "org.linkedin.gradle.plugins.${name.capitalize()}Plugin"
+                id = "org.pongasoft.$name"
+                implementationClass = "org.pongasoft.gradle.plugins.${name.capitalize()}Plugin"
             }
         }
     }

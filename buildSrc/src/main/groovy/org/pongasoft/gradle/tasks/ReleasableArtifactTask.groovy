@@ -15,13 +15,13 @@
  * the License.
  */
 
-package org.linkedin.gradle.tasks
+package org.pongasoft.gradle.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.OutputFile
-import org.linkedin.gradle.core.PublishArtifactImpl
-import org.linkedin.gradle.plugins.ReleasePlugin
-import org.linkedin.gradle.core.ArtifactInfo
+import org.pongasoft.gradle.core.PublishArtifactImpl
+import org.pongasoft.gradle.plugins.ReleasePlugin
+import org.pongasoft.gradle.core.ArtifactInfo
 
 /**
  * Represents a task that produces an artifact that can be 'released'

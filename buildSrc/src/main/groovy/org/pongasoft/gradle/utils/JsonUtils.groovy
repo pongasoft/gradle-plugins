@@ -16,7 +16,7 @@
  */
 
 
-package org.linkedin.gradle.utils
+package org.pongasoft.gradle.utils
 
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper

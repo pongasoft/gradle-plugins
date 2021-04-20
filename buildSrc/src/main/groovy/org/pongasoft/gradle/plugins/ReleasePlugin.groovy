@@ -15,7 +15,7 @@
  * the License.
  */
 
-package org.linkedin.gradle.plugins
+package org.pongasoft.gradle.plugins
 
 import org.gradle.api.Project
 import org.gradle.api.Plugin
@@ -26,10 +26,10 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.internal.hash.HashUtil
 import org.gradle.internal.hash.HashValue
-import org.linkedin.gradle.core.ArtifactInfo
-import org.linkedin.gradle.core.BuildInfo
-import org.linkedin.gradle.core.PublishArtifactImpl
-import org.linkedin.gradle.utils.Utils
+import org.pongasoft.gradle.core.ArtifactInfo
+import org.pongasoft.gradle.core.BuildInfo
+import org.pongasoft.gradle.core.PublishArtifactImpl
+import org.pongasoft.gradle.utils.Utils
 
 /**
  * This plugin adds a 'release' and 'publish' task.
@@ -72,7 +72,7 @@ class ReleasePlugin implements Plugin<Project>
 
     project.getPlugins().apply(BasePlugin.class);
 
-    if(!project.plugins.hasPlugin('org.linkedin.repository'))
+    if(!project.plugins.hasPlugin('org.pongasoft.repository'))
     {
       project.apply plugin: RepositoryPlugin
     }
@@ -170,19 +170,19 @@ class ReleasePlugin implements Plugin<Project>
         buildInfo.addPublishedArtifacts(project, publishMasterConfiguration)
       }
 
-      /********************************************************
-       * task: release
-       ********************************************************/
-      project.task([dependsOn: 'uploadReleaseMaster',
-                   description: "Releases in a releaseRepo [${releaseRepositoryName}]"],
-                   'release')
-
-      /********************************************************
-       * task: publish
-       ********************************************************/
-      project.task([dependsOn: 'uploadPublishMaster',
-                   description: "Publishes in a releaseRepo [${publishRepositoryName}]"],
-                   'publish')
+//      /********************************************************
+//       * task: release
+//       ********************************************************/
+//      project.task([dependsOn: 'uploadReleaseMaster',
+//                   description: "Releases in a releaseRepo [${releaseRepositoryName}]"],
+//                   'release')
+//
+//      /********************************************************
+//       * task: publish
+//       ********************************************************/
+//      project.task([dependsOn: 'uploadPublishMaster',
+//                   description: "Publishes in a releaseRepo [${publishRepositoryName}]"],
+//                   'publish')
 
       boolean hasSources = false
       def javaSources = project.tasks.findByName('javadoc')?.source

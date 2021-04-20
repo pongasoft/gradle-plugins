@@ -21,8 +21,8 @@
   * plugin before invoking this build. Then the plugin itself gets recompiled as part of this build
   * so that it can be published using the normal flow. This build uses the plugin it publishes!
   */
- apply plugin: 'org.linkedin.userConfig'
- apply plugin: 'org.linkedin.spec'
+ apply plugin: 'org.pongasoft.userConfig'
+ apply plugin: 'org.pongasoft.spec'
 
  ext {
    topBuildDir = userConfig.top.build.dir ?: "${rootDir}/out/build"
@@ -34,7 +34,6 @@
  }
 
 subprojects { p ->
-  apply plugin: 'maven'
-  apply plugin: 'org.linkedin.repository'
+  apply plugin: 'org.pongasoft.repository'
   buildDir = "${topBuildDir}${project.path.replace(':','/')}".toString()
 }

@@ -17,11 +17,11 @@
 
 
 
-package org.linkedin.gradle.plugins
+package org.pongasoft.gradle.plugins
 
 import org.gradle.api.Project
 import org.gradle.api.Plugin
-import org.linkedin.gradle.utils.Utils
+import org.pongasoft.gradle.utils.Utils
 
 /**
  * This plugin will read external configuration properties and make them available
@@ -58,12 +58,12 @@ class UserConfigPlugin implements Plugin<Project>
     configFile = new File(configFile.toString())
     if(configFile.exists())
     {
-      project.logger.info "Loading user config [${configFile.toURL()}]"
+      project.logger.info "Loading user config [${configFile.toURI().toURL()}]"
       def slurper = new ConfigSlurper()
       slurper.setBinding([userConfig: userConfig])
       try
       {
-        slurper.parse(configFile.toURL())
+        slurper.parse(configFile.toURI().toURL())
       }
       catch (Exception e)
       {
@@ -73,7 +73,7 @@ class UserConfigPlugin implements Plugin<Project>
     }
     else
     {
-      project.logger.debug "No user config found [${configFile.toURL()}]"
+      project.logger.debug "No user config found [${configFile.toURI().toURL()}]"
       return null
     }
   }

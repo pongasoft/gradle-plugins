@@ -14,8 +14,8 @@
  * the License.
  */
 
-apply plugin: 'org.linkedin.cmdline'
-apply plugin: 'org.linkedin.release'
+apply plugin: 'org.pongasoft.cmdline'
+apply plugin: 'org.pongasoft.release'
 
 release  {
   publish = allRepositories.distributions

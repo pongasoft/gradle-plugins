@@ -15,7 +15,7 @@
  */
 
 apply plugin: 'java'
-apply plugin: 'org.linkedin.release'
+apply plugin: 'org.pongasoft.release'
 
 sourceCompatibility = spec.jdk
 targetCompatibility = spec.jdk

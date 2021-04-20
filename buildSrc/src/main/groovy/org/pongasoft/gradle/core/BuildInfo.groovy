@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.linkedin.gradle.core
+package org.pongasoft.gradle.core
 
 import org.gradle.BuildResult
 import org.gradle.api.Project
@@ -23,8 +23,8 @@ import org.gradle.initialization.BuildRequestMetaData
 import org.gradle.internal.jvm.Jvm
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.internal.hash.HashUtil
-import org.linkedin.gradle.utils.JsonUtils
-import org.linkedin.gradle.utils.Utils
+import org.pongasoft.gradle.utils.JsonUtils
+import org.pongasoft.gradle.utils.Utils
 
 import java.text.SimpleDateFormat
 

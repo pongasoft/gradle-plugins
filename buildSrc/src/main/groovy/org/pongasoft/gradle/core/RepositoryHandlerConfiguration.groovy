@@ -15,7 +15,7 @@
  * the License.
  */
 
-package org.linkedin.gradle.core
+package org.pongasoft.gradle.core
 
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 

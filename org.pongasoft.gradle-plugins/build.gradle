@@ -17,7 +17,8 @@
 
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'groovy'
-apply plugin: 'org.linkedin.release'
+apply plugin: 'org.pongasoft.release'
+apply plugin: 'org.pongasoft.signing'
 
 allRepositories.build.configure()
 
@@ -32,7 +33,6 @@ java {
     }
 }
 
-
 sourceSets {
   main {
     groovy {
@@ -44,14 +44,14 @@ sourceSets {
   }
 }
 
-def orgLinkedInPlugins = ["cmdline", "release", "repository", "spec", "userConfig", "buildInfo"]
+def orgPongasoftPlugins = ["cmdline", "release", "repository", "spec", "userConfig", "buildInfo", "signing"]
 
 gradlePlugin {
     plugins {
-        orgLinkedInPlugins.forEach { name ->
+        orgPongasoftPlugins.forEach { name ->
             create("${name}Plugin") {
-                id = "org.linkedin.$name"
-                implementationClass = "org.linkedin.gradle.plugins.${name.capitalize()}Plugin"
+                id = "org.pongasoft.$name"
+                implementationClass = "org.pongasoft.gradle.plugins.${name.capitalize()}Plugin"
             }
         }
     }

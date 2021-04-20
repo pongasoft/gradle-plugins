@@ -17,4 +17,4 @@
 
 rootProject.name = "gradle-plugins"
 
-include ":org.linkedin.gradle-plugins"
+include ":org.pongasoft.gradle-plugins"

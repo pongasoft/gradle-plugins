@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013 Yan Pujante
+ * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Portions Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,19 +14,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.linkedin.gradle.plugins
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.linkedin.gradle.core.BuildInfo
+package org.pongasoft.gradle.tasks
+
+import org.gradle.api.tasks.OutputFile
 
 /**
- * @author yan@pongasoft.com  */
-public class BuildInfoPlugin implements Plugin<Project>
+ * Simple class for 1 artifact
+ *
+ * @author ypujante@linkedin.com */
+class SingleArtifactTask extends ReleasableArtifactTask
 {
-  @Override
-  void apply(Project project)
-  {
-    BuildInfo.findOrCreate(project)
-  }
+  @OutputFile
+  File artifactFile
 }

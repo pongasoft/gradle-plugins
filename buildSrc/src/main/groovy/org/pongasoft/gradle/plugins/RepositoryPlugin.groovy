@@ -15,14 +15,14 @@
  * the License.
  */
 
-package org.linkedin.gradle.plugins
+package org.pongasoft.gradle.plugins
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
-import org.linkedin.gradle.core.RepositoryHandlerConfiguration
-import org.linkedin.gradle.core.RepositoryHandlerContainerImpl
-import org.linkedin.gradle.utils.Utils
+import org.pongasoft.gradle.core.RepositoryHandlerConfiguration
+import org.pongasoft.gradle.core.RepositoryHandlerContainerImpl
+import org.pongasoft.gradle.utils.Utils
 
 /**
  * The goal of this plugin is to load and apply external repositories configuration.

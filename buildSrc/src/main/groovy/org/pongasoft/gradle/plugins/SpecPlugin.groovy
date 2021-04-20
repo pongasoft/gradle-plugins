@@ -15,13 +15,13 @@
  * the License.
  */
 
-package org.linkedin.gradle.plugins
+package org.pongasoft.gradle.plugins
 
 import org.gradle.api.Project
 import org.gradle.api.Plugin
 import org.apache.tools.ant.filters.ReplaceTokens
-import org.linkedin.gradle.utils.JsonUtils
-import org.linkedin.gradle.utils.Utils
+import org.pongasoft.gradle.utils.JsonUtils
+import org.pongasoft.gradle.utils.Utils
 
 /**
  * The goal of this plugin is to read/parse the product spec and make it available during the build

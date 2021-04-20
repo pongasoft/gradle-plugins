@@ -17,17 +17,17 @@
 
 
 
-package org.linkedin.gradle.plugins
+package org.pongasoft.gradle.plugins
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.tasks.bundling.Compression
 import org.gradle.api.tasks.bundling.Tar
-import org.linkedin.gradle.core.BuildInfo
+import org.pongasoft.gradle.core.BuildInfo
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.BasePlugin
-import org.linkedin.gradle.tasks.SingleArtifactTask
+import org.pongasoft.gradle.tasks.SingleArtifactTask
 
 class CmdlinePlugin implements Plugin<Project>
 {

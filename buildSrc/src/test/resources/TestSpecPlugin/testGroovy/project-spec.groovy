@@ -15,7 +15,7 @@
  */
 spec = [
   name: 'gradle-plugins',
-  group: 'org.linkedin',
+  group: 'org.pongasoft',
   version: '1.0.0',
 
   versions: [

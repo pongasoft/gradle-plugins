@@ -15,7 +15,7 @@
  * the License.
  */
 
-package org.linkedin.gradle.core
+package org.pongasoft.gradle.core
 
 /**
  * In all methods <code>configureObject</code> can be:

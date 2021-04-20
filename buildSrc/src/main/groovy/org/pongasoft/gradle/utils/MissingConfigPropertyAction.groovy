@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2010 LinkedIn, Inc
+ * Copyright (c) 2013 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,35 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.linkedin.gradle.core
+package org.pongasoft.gradle.utils
 
 /**
- * @author ypujante@linkedin.com */
-class ArtifactInfo
+ * @author yan@pongasoft.com  */
+public enum MissingConfigPropertyAction
 {
-  def configurations = []
-  String name
-  String extension
-  String type
-  String classifier = ''
-
-  ArtifactInfo() {}
-  
-  ArtifactInfo(ArtifactInfo other)
-  {
-    configurations = other.configurations
-    name = other.name
-    extension = other.name
-    type = other.type
-    classifier = other.classifier
-  }
-
-  String getType()
-  {
-    if(type)
-      return type
-    else
-      return getExtension()
-  }
+  NULL, // for optional property
+  THROW, // for required property
+  PROMPT, // prompt for the property
+  PROMPT_PASSWORD // prompt for the property (but hide output)
 }
