@@ -5,6 +5,12 @@ import org.gradle.api.Project
 import org.pongasoft.gradle.utils.MissingConfigPropertyAction
 import org.pongasoft.gradle.utils.Utils
 
+/**
+ * The purpose of this plugin is to apply the `signing` plugin and automatically:
+ *
+ * - populate the necessary properties by looking at argument on command line/env/userConfig/spec
+ * - add releaseMaster to the signed artifact (which adds a signReleaseMaster task)
+ */
 class SigningPlugin implements Plugin<Project> {
   private Project project
 

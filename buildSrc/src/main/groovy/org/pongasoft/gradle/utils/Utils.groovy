@@ -186,6 +186,12 @@ class Utils
     }
   }
 
+  // uppercase and replace . with _
+  private static String convertPropertyNameToEnv(String propertyName)
+  {
+    return propertyName.toUpperCase().replace('.', '_')
+  }
+
   /**
    * Try to locate the config property using a dotted name (ex: top.build.dir). First try
    * the project, then the userConfig (if present), then the spec object (if present). When the
@@ -207,9 +213,14 @@ class Utils
     if(project.hasProperty(dottedConfigPropertyName))
       return project."${dottedConfigPropertyName}"
 
+    // 2. check for environment property
+    def envPropertyName = convertPropertyNameToEnv(dottedConfigPropertyName)
+    if(System.getenv(envPropertyName) != null)
+      return System.getenv(envPropertyName)
+
     def configPropertyNameParts = dottedConfigPropertyName.split('\\.')
 
-    // 2. we check user config
+    // 3. we check user config
     if(project.hasProperty('userConfig'))
     {
       def userConfig = project.userConfig
@@ -230,7 +241,7 @@ class Utils
         return configProperty
     }
 
-    // 3. we check spec
+    // 4. we check spec
     if(project.hasProperty('spec'))
     {
       def spec = project.spec
@@ -257,7 +268,7 @@ class Utils
 
   private static void throwMissingConfigPropertyException(String propertyName)
   {
-    throw new MissingResourceException("Cannot locate property ${propertyName}: either use userConfig or spec plugin to define it or -P${propertyName}=xxx on the command line")
+    throw new MissingResourceException("Cannot locate property ${propertyName}: either use userConfig or spec plugin to define it or -P${propertyName}=xxx on the command line or define ${convertPropertyNameToEnv(propertyName)} as an environment variable")
   }
 
   /**
