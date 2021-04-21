@@ -1,7 +1,6 @@
-
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
- * Portions Copyright (c) 2013-2015 Yan Pujante
+ * Portions Copyright (c) 2013-2021 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,24 +15,23 @@
  * the License.
  */
 
- /**
-  * This project is tricky. It relies on the buildSrc feature of gradle to compile and use the
-  * plugin before invoking this build. Then the plugin itself gets recompiled as part of this build
-  * so that it can be published using the normal flow. This build uses the plugin it publishes!
-  */
- apply plugin: 'org.pongasoft.userConfig'
- apply plugin: 'org.pongasoft.spec'
+/**
+ * This project is tricky. It relies on the buildSrc feature of gradle to compile and use the
+ * plugin before invoking this build. Then the plugin itself gets recompiled as part of this build
+ * so that it can be published using the normal flow. This build uses the plugin it publishes!
+ */
+apply plugin: org.pongasoft.gradle.plugins.UserConfigPlugin
+apply plugin: org.pongasoft.gradle.plugins.SpecPlugin
 
- ext {
-   topBuildDir = userConfig.top.build.dir ?: "${rootDir}/out/build"
- }
+ext {
+  topBuildDir = userConfig.top.build.dir ?: "${rootDir}/out/build"
+}
 
- allprojects {
-   group = spec.group
-   version = spec.version
- }
+allprojects {
+  group = spec.group
+  version = spec.version
+}
 
 subprojects { p ->
-  apply plugin: 'org.pongasoft.repository'
-  buildDir = "${topBuildDir}${project.path.replace(':','/')}".toString()
+  buildDir = "${topBuildDir}${project.path.replace(':', '/')}".toString()
 }

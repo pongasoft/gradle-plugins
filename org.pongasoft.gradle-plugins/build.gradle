@@ -17,8 +17,9 @@
 
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'groovy'
-apply plugin: 'org.pongasoft.release'
-apply plugin: 'org.pongasoft.signing'
+apply plugin: org.pongasoft.gradle.plugins.RepositoryPlugin
+apply plugin: org.pongasoft.gradle.plugins.ReleasePlugin
+apply plugin: org.pongasoft.gradle.plugins.SigningPlugin
 
 allRepositories.build.configure()
 

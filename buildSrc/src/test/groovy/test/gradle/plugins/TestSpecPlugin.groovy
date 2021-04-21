@@ -21,6 +21,8 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.api.Project
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.pongasoft.gradle.plugins.SpecPlugin
+
 import static org.junit.jupiter.api.Assertions.assertEquals
 
 /**
@@ -34,7 +36,7 @@ public class TestSpecPlugin
     builder.withProjectDir(new File("src/test/resources/TestSpecPlugin/testJson"))
     Project project = builder.build()
     project.ext.release = true
-    project.pluginManager.apply("org.pongasoft.spec")
+    project.pluginManager.apply(SpecPlugin)
     assertEquals('gradle-plugins', project.spec.name)
     assertEquals('org.pongasoft', project.spec.group)
     assertEquals('1.0.0', project.spec.version)
@@ -57,7 +59,7 @@ public class TestSpecPlugin
     builder.withProjectDir(new File("src/test/resources/TestSpecPlugin/testGroovy"))
     Project project = builder.build()
     project.ext.release = true
-    project.pluginManager.apply("org.pongasoft.spec")
+    project.pluginManager.apply(SpecPlugin)
     assertEquals('gradle-plugins', project.spec.name)
     assertEquals('org.pongasoft', project.spec.group)
     assertEquals('1.0.0', project.spec.version)
@@ -81,14 +83,14 @@ public class TestSpecPlugin
     builder.withProjectDir(new File("src/test/resources/TestSpecPlugin/testJson"))
     Project project = builder.build()
     project.ext.release = true
-    project.pluginManager.apply("org.pongasoft.spec")
+    project.pluginManager.apply(SpecPlugin)
     assertEquals('1.0.0', project.spec.version)
 
     // when nothing provided => version should be snapshot
     builder = ProjectBuilder.builder()
     builder.withProjectDir(new File("src/test/resources/TestSpecPlugin/testJson"))
     project = builder.build()
-    project.pluginManager.apply("org.pongasoft.spec")
+    project.pluginManager.apply(SpecPlugin)
     assertEquals('1.0.0-SNAPSHOT', project.spec.version)
 
     // when release=true => version should not be snapshot (in this case it throws an exception)
@@ -98,7 +100,7 @@ public class TestSpecPlugin
     project.ext.release = true
     try
     {
-      project.pluginManager.apply("org.pongasoft.spec")
+      project.pluginManager.apply(SpecPlugin)
       Assertions.fail("should have failed")
     }
     catch(Throwable e)
@@ -117,7 +119,7 @@ public class TestSpecPlugin
     builder = ProjectBuilder.builder()
     builder.withProjectDir(new File("src/test/resources/TestSpecPlugin/testVersion"))
     project = builder.build()
-    project.pluginManager.apply("org.pongasoft.spec")
+    project.pluginManager.apply(SpecPlugin)
     assertEquals('1.0.0-SNAPSHOT', project.spec.version)
   }
 }

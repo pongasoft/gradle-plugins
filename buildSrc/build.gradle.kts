@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
  * Portions Copyright (c) 2013-2021 Yan Pujante
@@ -17,7 +16,6 @@
  */
 
 plugins {
-    `java-gradle-plugin`
     groovy
 }
 
@@ -25,38 +23,11 @@ repositories {
     mavenCentral()
 }
 
- dependencies {
-     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
-     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
- }
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
 
- tasks.getByName<Test>("test") {
-     useJUnitPlatform()
- }
-
-// val groovydocTask: Groovydoc = tasks.findByName("groovydoc")!! as Groovydoc
-
-// tasks {
-//     register<Jar>("groovydocJar") {
-//         archiveClassifier.set("groovydoc")
-//         from(groovydocTask.destinationDir)
-//         dependsOn(groovydocTask)
-//     }
-// }
-
-// java {
-//     withSourcesJar()
-// }
-
-val orgPongasoftPlugins = arrayOf("cmdline", "release", "repository", "spec", "userConfig", "buildInfo", "signing")
-
-gradlePlugin {
-    plugins {
-        orgPongasoftPlugins.forEach { name ->
-            create("${name}Plugin") {
-                id = "org.pongasoft.$name"
-                implementationClass = "org.pongasoft.gradle.plugins.${name.capitalize()}Plugin"
-            }
-        }
-    }
+tasks.getByName<Test>("test") {
+    useJUnitPlatform()
 }
