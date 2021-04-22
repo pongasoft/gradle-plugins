@@ -17,6 +17,7 @@
 
 package org.pongasoft.gradle.utils
 
+import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.resources.MissingResourceException
 
@@ -99,6 +100,12 @@ class Utils
         "${project.group}-${project.name}"
       ]
     }
+  }
+
+  /**
+   * @return `true` if the version is a snapshot version defined by `-SNAPSHOT` at the end */
+  static boolean isSnapshotVersion(Project project) {
+    return project.version.endsWith('-SNAPSHOT')
   }
 
   /**
@@ -387,5 +394,13 @@ class Utils
     }
     result.append((timeInMs % MS_PER_MINUTE) / 1000.0).append(" secs");
     return result.toString();
+  }
+
+  /**
+   * Make sure that a plugin is applied if it exists */
+  static void applyPluginIfExists(Project project, Class<? extends Plugin> pluginClass) {
+    if(project.plugins.hasPlugin(pluginClass)) {
+      project.getPluginManager().apply(pluginClass)
+    }
   }
 }

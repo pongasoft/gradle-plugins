@@ -70,9 +70,9 @@ class ReleasePlugin implements Plugin<Project>
 
     BuildInfo buildInfo = BuildInfo.findOrCreate(project)
 
-    project.getPlugins().apply(BasePlugin.class);
+    project.getPlugins().apply(BasePlugin.class)
 
-    if(!project.plugins.hasPlugin('org.pongasoft.repository'))
+    if(!project.plugins.hasPlugin(RepositoryPlugin))
     {
       project.apply plugin: RepositoryPlugin
     }
@@ -109,7 +109,7 @@ class ReleasePlugin implements Plugin<Project>
       }
 
       def releaseRepositoryName =
-        project.version.endsWith('-SNAPSHOT') ? extension.snapshotRelease : extension.release
+          Utils.isSnapshotVersion(project) ? extension.snapshotRelease : extension.release
 
       //////////////////////////////////////
       // handling release
@@ -117,7 +117,7 @@ class ReleasePlugin implements Plugin<Project>
       project.uploadReleaseMaster {
         def releaseRepo = RepositoryPlugin.findRepository(project, releaseRepositoryName)
         if(releaseRepo)
-          releaseRepo.configure(repositories)
+          releaseRepo.configure(project.repositories)
         else
           project.logger.warn("[${project.name}]: Could not locate configuration for release [${releaseRepositoryName}]")
       }
@@ -131,7 +131,7 @@ class ReleasePlugin implements Plugin<Project>
       // handling publish
       //////////////////////////////////////
       def publishRepositoryName =
-        project.version.endsWith('-SNAPSHOT') ? extension.snapshotPublish : extension.publish
+        Utils.isSnapshotVersion(project) ? extension.snapshotPublish : extension.publish
 
       project.uploadPublishMaster {
         def publishRepo = RepositoryPlugin.findRepository(project, publishRepositoryName)
