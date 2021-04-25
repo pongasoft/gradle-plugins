@@ -18,3 +18,9 @@
 rootProject.name = "gradle-plugins"
 
 include ":org.pongasoft.gradle-plugins"
+
+if(false) {
+  include ':org.pongasoft.test-1'
+  include ':org.pongasoft.test-2'
+}
+

@@ -17,7 +17,7 @@
 apply plugin: 'maven-publish'
 apply plugin: 'ivy-publish'
 
-def topReleaseDir = userConfig.top.release.dir ?: layout.buildDirectory.dir("release")
+def topReleaseDir = userConfig.top.release.dir ?: new File(project.rootProject.buildDir, "release")
 
 publishing {
   publications {
@@ -58,14 +58,14 @@ publishing {
     if(releaseType.isLocal) {
       ivy {
         name = "release"
-        url = layout.buildDirectory.dir("repo-ivy-local")
+        url = new File(project.rootProject.buildDir, "release/ivy")
 //    url = topReleaseDir
         layout 'maven'
       }
     } else {
       maven {
         name = "release"
-        url = layout.buildDirectory.dir("repo-maven-remote")
+        url = new File(project.rootProject.buildDir, "release/maven")
       }
     }
   }

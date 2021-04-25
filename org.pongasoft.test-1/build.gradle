@@ -15,8 +15,12 @@
  */
 
 apply plugin: 'java'
-apply plugin: org.pongasoft.gradle.plugins.ReleasePlugin
 apply plugin: org.pongasoft.gradle.plugins.ExternalRepositoriesPlugin
+apply plugin: org.pongasoft.gradle.plugins.ExternalPublishingPlugin
+apply plugin: org.pongasoft.gradle.plugins.ReleasePlugin
+apply plugin: org.pongasoft.gradle.plugins.SigningPlugin
+
+externalRepositories.build.configure()
 
 sourceCompatibility = spec.jdk
 targetCompatibility = spec.jdk

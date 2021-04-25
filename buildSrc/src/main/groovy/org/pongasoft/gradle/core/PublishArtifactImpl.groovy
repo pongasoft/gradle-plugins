@@ -17,6 +17,7 @@
 package org.pongasoft.gradle.core
 
 import org.gradle.api.artifacts.PublishArtifact
+import org.gradle.api.publish.Publication
 import org.gradle.api.tasks.TaskDependency
 import org.gradle.api.internal.tasks.DefaultTaskDependency
 import org.gradle.api.Task
@@ -54,5 +55,13 @@ class PublishArtifactImpl implements PublishArtifact
   String getClassifier()
   {
     return artifact.classifier
+  }
+
+  void addToPublication(Publication publication) {
+    publication.artifact([
+            source: file.path,
+            extension: extension,
+            classifier: classifier
+        ])
   }
 }

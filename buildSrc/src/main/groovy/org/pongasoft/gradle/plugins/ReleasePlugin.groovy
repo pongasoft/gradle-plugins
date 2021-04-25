@@ -24,6 +24,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.bundling.Jar
 import org.pongasoft.gradle.core.BuildInfo
+import org.pongasoft.gradle.core.PublishArtifactImpl
 import org.pongasoft.gradle.utils.Utils
 
 /**
@@ -244,7 +245,10 @@ class ReleasePluginExtension
     // add all the artifacts from the configuration to the publication
     if(publication) {
       configuration.allArtifacts.each { artifact ->
-        publication.artifact(artifact)
+        if(artifact instanceof PublishArtifactImpl)
+          artifact.addToPublication(publication)
+        else
+          publication.artifact(artifact)
       }
     }
 

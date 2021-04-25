@@ -14,12 +14,9 @@
  * the License.
  */
 
+apply plugin: org.pongasoft.gradle.plugins.CmdlinePlugin
 apply plugin: org.pongasoft.gradle.plugins.ExternalRepositoriesPlugin
-apply plugin: org.pongasoft.gradle.plugins.CmdLinePlugin
+apply plugin: org.pongasoft.gradle.plugins.ExternalPublishingPlugin
 apply plugin: org.pongasoft.gradle.plugins.ReleasePlugin
-
-release  {
-  publish = externalRepositories.distributions
-}
-
+apply plugin: org.pongasoft.gradle.plugins.SigningPlugin
 
