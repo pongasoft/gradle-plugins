@@ -29,7 +29,7 @@ import org.pongasoft.gradle.utils.Utils
 /**
  * This plugin adds a 'release' task (can be changed with convention)
  *
- * If you want your artifacts to be 'released'/'published' then simply add them to either
+ * If you want your artifacts to be released then simply add them to either
  * the 'releaseMaster' configuration or to a new configuration and make 'releaseMaster' extends
  * from it.
  *
@@ -56,7 +56,7 @@ class ReleasePlugin implements Plugin<Project>
     // optional as publishing can be defined inline
     Utils.applyPluginIfExists(project, ExternalPublishingPlugin)
 
-    def extension = project.extensions.create("release", ReleasePluginExtension)
+    def extension = project.extensions.create("release", ReleasePluginExtension, project)
 
     // creating releaseMaster configuration
     Configuration releaseMasterConfiguration = findOrAddConfiguration(project, RELEASE_MASTER_CONFIGURATION)
@@ -74,39 +74,23 @@ class ReleasePlugin implements Plugin<Project>
       // 2. Add sources and docs
       addSourcesAndDocs(extension)
 
-      // 3. setup the publication
-      def publication = project.publishing.publications.findByName(extension.publicationName)
-      if(publication) {
-        releaseMasterConfiguration.allArtifacts.each { artifact ->
-          publication.artifact(artifact)
-        }
-      }
+      // 3. Create releaseMaster task
+      Task releaseMasterTask =
+          extension.createConfigurationPublicationTask(releaseMasterConfiguration.name,
+                                                       "releaseMaster",
+                                                       extension.publicationName,
+                                                       extension.repositoryName)
 
-      /********************************************************
-       * task: release
-       ********************************************************/
-      def releaseRepositoryName = extension.repositoryName
-
-      def releaseRepository = project.publishing.repositories.findByName(releaseRepositoryName)
-
-      if(releaseRepository != null && publication != null) {
-        Task releaseMasterTask = project.tasks.register("releaseMaster") {
-          dependsOn("publish${publication.name.capitalize()}PublicationTo${releaseRepository.name.capitalize()}Repository")
-        }.get()
-
-        // we add the artifacts that were just released to the build info
+      if(releaseMasterTask) {
+        // 4. add the artifacts that were just released to the build info
         releaseMasterTask.doLast {
           buildInfo.addReleasedArtifacts(project, releaseMasterConfiguration)
         }
 
+        // 6. create the "release" convenient task
         project.task([dependsOn: releaseMasterTask,
-                      description: "Releases in a releaseRepo [${releaseRepositoryName}]"],
+                      description: "Releases [${RELEASE_MASTER_CONFIGURATION}] configuration to publication(s)"],
             extension.taskName)
-      } else {
-        if(!releaseRepository)
-          project.logger.warn("[${project.name}]: Could not find a repository named [${releaseRepositoryName}] in publishing.repositories (either define one in your build file or in the allRespositories.publishing section of repositories.gradle)")
-        if(!publication)
-          project.logger.warn("[${project.name}]: Could not find a publication named [${extension.publicationName}] in publishing.publications")
       }
     }
   }
@@ -224,13 +208,59 @@ class ReleasePlugin implements Plugin<Project>
 
 class ReleasePluginExtension
 {
+  private final Project _project
+  
+  ReleasePluginExtension(Project project) {
+    _project = project
+  }
+  
   def releaseConfigurations = ['archives'] as Set
   def sourcesConfigurations = [sources: []]
   def javadocConfigurations = [javadoc: ['docs']]
   def groovydocConfigurations = [groovydoc: ['docs']]
 
   def taskName = "release"
-
   def repositoryName = "release"
   def publicationName = "release"
+
+  /**
+   * Creates a task with the provided name that will publish all artifacts defined by the provided configuration
+   * in the publication defined by the combination `publicationName`/`repositoryName`
+   *
+   * @return the task or `null` if the configuration, publication or repository does not exist */
+  Task createConfigurationPublicationTask(String configurationName,
+                                          String taskName,
+                                          String publicationName,
+                                          String repositoryName) {
+    
+    def configuration = _project.configurations.findByName(configurationName)
+    if(configuration == null) {
+      _project.logger.warn("[${_project.name}]: Could not find a configuration named [${configurationName}]")
+      return null
+    }
+
+    def publication = _project.publishing.publications.findByName(publicationName)
+
+    // add all the artifacts from the configuration to the publication
+    if(publication) {
+      configuration.allArtifacts.each { artifact ->
+        publication.artifact(artifact)
+      }
+    }
+
+    def repository = _project.publishing.repositories.findByName(repositoryName)
+
+    if(repository != null && publication != null) {
+      Task task = _project.tasks.register(taskName).get()
+      task.dependsOn("publish${publication.name.capitalize()}PublicationTo${repository.name.capitalize()}Repository")
+      return task
+    }
+
+    if(!repository)
+      _project.logger.warn("[${_project.name}]: Could not find a repository named [${repositoryName}] in publishing.repositories")
+    if(!publication)
+      _project.logger.warn("[${_project.name}]: Could not find a publication named [${publicationName}] in publishing.publications")
+
+    return null
+  }
 }
