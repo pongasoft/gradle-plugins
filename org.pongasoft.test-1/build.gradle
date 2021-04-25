@@ -16,7 +16,7 @@
 
 apply plugin: 'java'
 apply plugin: org.pongasoft.gradle.plugins.ReleasePlugin
-apply plugin: org.pongasoft.gradle.plugins.RepositoryPlugin
+apply plugin: org.pongasoft.gradle.plugins.ExternalRepositoriesPlugin
 
 sourceCompatibility = spec.jdk
 targetCompatibility = spec.jdk

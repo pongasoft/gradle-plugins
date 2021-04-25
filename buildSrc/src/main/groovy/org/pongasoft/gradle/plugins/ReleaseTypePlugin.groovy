@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2010-2010 LinkedIn, Inc
- * Portions Copyright (c) 2013-2021 Yan Pujante
+ * Copyright (c) 2021 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,10 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.pongasoft.gradle.plugins
 
-/**
- * Repositories for build
- */
-externalRepositories.build = {
-  mavenCentral()
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.pongasoft.gradle.core.ReleaseType
+
+class ReleaseTypePlugin implements Plugin<Project> {
+  @Override
+  void apply(Project project) {
+    // add the releaseType property
+    project.ext.set("releaseType", ReleaseType.from(project))
+  }
 }

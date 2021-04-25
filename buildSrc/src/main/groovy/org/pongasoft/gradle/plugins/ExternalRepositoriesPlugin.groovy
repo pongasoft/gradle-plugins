@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
- * Portions Copyright (c) 2013 Yan Pujante
+ * Portions Copyright (c) 2013-2021 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ package org.pongasoft.gradle.plugins
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.plugins.BasePlugin
 import org.pongasoft.gradle.core.RepositoryHandlerConfiguration
 import org.pongasoft.gradle.core.RepositoryHandlerContainerImpl
 import org.pongasoft.gradle.utils.Utils
@@ -28,7 +29,7 @@ import org.pongasoft.gradle.utils.Utils
  * The goal of this plugin is to load and apply external repositories configuration.
  *
  * @author ypujante@linkedin.com */
-class RepositoryPlugin implements Plugin<Project>
+class ExternalRepositoriesPlugin implements Plugin<Project>
 {
   private Project project
 
@@ -36,14 +37,15 @@ class RepositoryPlugin implements Plugin<Project>
   {
     this.project = project
 
+    project.getPlugins().apply(BasePlugin.class)
+    project.getPlugins().apply(ReleaseTypePlugin.class)
+
     def factory = project.services.get(RepositoryHandler.class)
 
     def container = new RepositoryHandlerContainerImpl(project: project,
                                                        repositoryHandlerFactory: factory)
 
-    project.ext {
-      allRepositories = new RepositoryPluginExtension(container)
-    }
+    project.extensions.create("externalRepositories", ExternalRepositoriesPluginExtension, container)
 
     def filesToLoad = Utils.getFilesToLoad(project, 'repositories', 'gradle')
 
@@ -61,16 +63,16 @@ class RepositoryPlugin implements Plugin<Project>
     if(name instanceof RepositoryHandlerConfiguration)
       return name
     else
-      project.allRepositories."${name}"
+      project.externalRepositories."${name}"
   }
 }
 
-class RepositoryPluginExtension
+class ExternalRepositoriesPluginExtension
 {
   private final RepositoryHandlerContainerImpl _container
   private final _rootName
 
-  RepositoryPluginExtension(RepositoryHandlerContainerImpl container, String rootName = null)
+  ExternalRepositoriesPluginExtension(RepositoryHandlerContainerImpl container, String rootName = null)
   {
     _container = container
     _rootName = rootName
@@ -84,14 +86,14 @@ class RepositoryPluginExtension
       return name
   }
 
-  // handle allRepositories.<name> << { } => add another configuration
-  // handle allRepositories.<name>.configure()
+  // handle externalRepositories.<name> << { } => add another configuration
+  // handle externalRepositories.<name>.configure()
   def propertyMissing(String name)
   {
     _container.find(computeName(name))
   }
 
-  // handle allRepositories.<name> = { } => value can be a closure, another repo or a string
+  // handle externalRepositories.<name> = { } => value can be a closure, another repo or a string
   def propertyMissing(String name, value)
   {
     _container.setConfiguration(computeName(name), value)

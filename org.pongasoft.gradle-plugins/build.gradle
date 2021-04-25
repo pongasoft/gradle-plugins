@@ -17,21 +17,22 @@
 
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'groovy'
-apply plugin: org.pongasoft.gradle.plugins.RepositoryPlugin
+apply plugin: org.pongasoft.gradle.plugins.ExternalRepositoriesPlugin
+apply plugin: org.pongasoft.gradle.plugins.ExternalPublishingPlugin
 apply plugin: org.pongasoft.gradle.plugins.ReleasePlugin
 apply plugin: org.pongasoft.gradle.plugins.SigningPlugin
 
-allRepositories.build.configure()
+externalRepositories.build.configure()
 
 dependencies {
-    testImplementation(spec.external.jupiterAPI)
-    testRuntimeOnly(spec.external.jupiterEngine)
+  testImplementation(spec.external.jupiterAPI)
+  testRuntimeOnly(spec.external.jupiterEngine)
 }
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(spec.versions.jdk)
-    }
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(spec.versions.jdk)
+  }
 }
 
 sourceSets {
@@ -45,15 +46,24 @@ sourceSets {
   }
 }
 
-def orgPongasoftPlugins = ["cmdline", "release", "repository", "spec", "userConfig", "buildInfo", "signing"]
+def orgPongasoftPlugins = [
+    "cmdline",
+    "release",
+    "externalRepositories",
+    "externalPublishing",
+    "spec",
+    "userConfig",
+    "buildInfo",
+    "signing"
+]
 
 gradlePlugin {
-    plugins {
-        orgPongasoftPlugins.forEach { name ->
-            create("${name}Plugin") {
-                id = "org.pongasoft.$name"
-                implementationClass = "org.pongasoft.gradle.plugins.${name.capitalize()}Plugin"
-            }
-        }
+  plugins {
+    orgPongasoftPlugins.forEach { name ->
+      create("${name}Plugin") {
+        id = "org.pongasoft.$name"
+        implementationClass = "org.pongasoft.gradle.plugins.${name.capitalize()}Plugin"
+      }
     }
+  }
 }

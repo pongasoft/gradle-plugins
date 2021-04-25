@@ -96,11 +96,6 @@ public class BuildInfo
     addArtifacts(project, configuration, releasedArtifacts)
   }
 
-  void addPublishedArtifacts(Project project, Configuration configuration)
-  {
-    addArtifacts(project, configuration, publishedArtifacts)
-  }
-
   private static void addArtifacts(Project project, Configuration configuration, def artifacts)
   {
     configuration.allArtifacts.all { PublishArtifact artifact ->

@@ -1,0 +1,73 @@
+/*
+ * Copyright (c) 2021 Yan Pujante
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+apply plugin: 'maven-publish'
+apply plugin: 'ivy-publish'
+
+def topReleaseDir = userConfig.top.release.dir ?: layout.buildDirectory.dir("release")
+
+publishing {
+  publications {
+    if(releaseType.isLocal) {
+      release(IvyPublication) {
+        // empty on purpose (release plugin fills it)
+      }
+    } else {
+      release(MavenPublication) {
+        pom {
+          name = project.name
+          description = 'A useful set of gradle plugins'
+          url = 'http://github.com/pongasoft/gradle-plugins'
+          licenses {
+            license {
+              name = 'The Apache Software License, Version 2.0'
+              url = 'http://www.apache.org/licenses/LICENSE-2.0'
+            }
+          }
+          developers {
+            developer {
+              id = 'ypujante'
+              name = 'Yan Pujante'
+              email = 'yan@pongasoft.com'
+            }
+          }
+          scm {
+            connection = "scm:git:${spec.scmUrl}"
+            developerConnection = "scm:git:${spec.scmUrl}"
+            url = spec.scmUrl
+          }
+        }
+      }
+    }
+  }
+
+  repositories {
+    if(releaseType.isLocal) {
+      ivy {
+        name = "release"
+        url = layout.buildDirectory.dir("repo-ivy-local")
+//    url = topReleaseDir
+        layout 'maven'
+      }
+    } else {
+      maven {
+        name = "release"
+        url = layout.buildDirectory.dir("repo-maven-remote")
+      }
+    }
+  }
+
+}

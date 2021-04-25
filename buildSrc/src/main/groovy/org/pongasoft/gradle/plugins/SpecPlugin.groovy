@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2010-2010 LinkedIn, Inc
- * Portions Copyright (c) 2013 Yan Pujante
+ * Portions Copyright (c) 2013-2021 Yan Pujante
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ package org.pongasoft.gradle.plugins
 import org.gradle.api.Project
 import org.gradle.api.Plugin
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.pongasoft.gradle.core.ReleaseType
 import org.pongasoft.gradle.utils.JsonUtils
 import org.pongasoft.gradle.utils.Utils
 
@@ -61,8 +62,11 @@ class SpecPlugin implements Plugin<Project>
         project.spec.version = "${project.spec.version}-SNAPSHOT".toString()
     }
 
+    def releaseType = ReleaseType.from(project)
+
     def mode = project.spec.version.endsWith('-SNAPSHOT') ? 'snapshot': 'release'
-    project.logger.lifecycle "Working in ${mode} mode: ${project.spec.version}"
+    def local = releaseType.isLocal
+    project.logger.lifecycle "Working in ${mode}/${local ? 'local' : 'remote'} mode: ${project.spec.version}"
   }
 
   /**
