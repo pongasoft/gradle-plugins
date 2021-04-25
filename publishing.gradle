@@ -14,18 +14,38 @@
  * the License.
  */
 
-apply plugin: 'maven-publish'
+apply plugin: org.pongasoft.gradle.plugins.SonatypePublishingPlugin
 apply plugin: 'ivy-publish'
 
 def topReleaseDir = userConfig.top.release.dir ?: new File(project.rootProject.buildDir, "release")
 
-publishing {
-  publications {
-    if(releaseType.isLocal) {
+// for local release we use ivy
+if (releaseType.isLocal) {
+  publishing {
+
+    // publications
+    publications {
       release(IvyPublication) {
         // empty on purpose (release plugin fills it)
       }
-    } else {
+    }
+
+    // repositories
+    repositories {
+      ivy {
+        name = "release"
+        url = topReleaseDir
+        //url = new File(project.rootProject.buildDir, "release/ivy")
+        layout 'maven'
+      }
+    }
+  }
+} else {
+  // for remote release we publish to maven central
+  publishing {
+
+    // publications
+    publications {
       release(MavenPublication) {
         pom {
           name = project.name
@@ -52,22 +72,10 @@ publishing {
         }
       }
     }
-  }
 
-  repositories {
-    if(releaseType.isLocal) {
-      ivy {
-        name = "release"
-        url = new File(project.rootProject.buildDir, "release/ivy")
-//    url = topReleaseDir
-        layout 'maven'
-      }
-    } else {
-      maven {
-        name = "release"
-        url = new File(project.rootProject.buildDir, "release/maven")
-      }
+    // repositories
+    repositories {
+      maven(sonatype.s01("release"))
     }
   }
-
 }

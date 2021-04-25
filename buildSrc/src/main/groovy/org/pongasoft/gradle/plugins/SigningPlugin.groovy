@@ -18,7 +18,7 @@ package org.pongasoft.gradle.plugins
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.BasePlugin
-import org.pongasoft.gradle.utils.MissingConfigPropertyAction
+import org.gradle.api.publish.plugins.PublishingPlugin
 import org.pongasoft.gradle.utils.Utils
 
 /**
@@ -48,19 +48,14 @@ class SigningPlugin implements Plugin<Project> {
     project.ext["signing.keyId"] =
         Utils.getConfigProperty(project, "signing.keyId")
     project.ext["signing.password"] =
-        Utils.getConfigProperty(project, "signing.password", null, MissingConfigPropertyAction.PROMPT_PASSWORD)
+        Utils.getConfigProperty(project, "signing.password")
     project.ext["signing.secretKeyRingFile"] =
         Utils.getConfigProperty(project, "signing.secretKeyRingFile")
 
-    // when using the Release plugin, we automatically sign the `releaseMaster` configuration
-    if(project.plugins.hasPlugin(ReleasePlugin))
-    {
-      // we make sure it is applied first
-      Utils.applyPluginIfExists(project, ReleasePlugin)
-
-      // sign the releaseMaster configuration
+    // automatically sign the publications
+    if(project.plugins.hasPlugin(PublishingPlugin)) {
       project.signing {
-        sign project.configurations.findByName(ReleasePlugin.RELEASE_MASTER_CONFIGURATION)
+        sign project.publishing.publications
       }
     }
   }
