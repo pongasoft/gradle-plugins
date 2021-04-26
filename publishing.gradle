@@ -75,7 +75,14 @@ if (releaseType.isLocal) {
 
     // repositories
     repositories {
-      maven(sonatype.s01("release"))
+      maven {
+        name = "release"
+        url = sonatype.s01.conditionedOn(releaseType)
+        credentials {
+          username = sonatype.username
+          password = sonatype.password
+        }
+      }
     }
   }
 }

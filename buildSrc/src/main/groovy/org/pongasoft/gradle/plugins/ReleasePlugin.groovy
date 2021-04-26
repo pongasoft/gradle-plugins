@@ -76,22 +76,24 @@ class ReleasePlugin implements Plugin<Project>
       addSourcesAndDocs(extension)
 
       // 3. Create releaseMaster task
-      Task releaseMasterTask =
-          extension.createConfigurationPublicationTask(releaseMasterConfiguration.name,
-                                                       "releaseMaster",
-                                                       extension.publicationName,
-                                                       extension.repositoryName)
+      if(extension.publicationName && extension.repositoryName) {
+        Task releaseMasterTask =
+            extension.createConfigurationPublicationTask(releaseMasterConfiguration.name,
+                                                         "releaseMaster",
+                                                         extension.publicationName,
+                                                         extension.repositoryName)
 
-      if(releaseMasterTask) {
-        // 4. add the artifacts that were just released to the build info
-        releaseMasterTask.doLast {
-          buildInfo.addReleasedArtifacts(project, releaseMasterConfiguration)
+        if(releaseMasterTask) {
+          // 4. add the artifacts that were just released to the build info
+          releaseMasterTask.doLast {
+            buildInfo.addReleasedArtifacts(project, releaseMasterConfiguration)
+          }
+
+          // 6. create the "release" convenient task
+          project.task([dependsOn: releaseMasterTask,
+                        description: "Releases [${RELEASE_MASTER_CONFIGURATION}] configuration to publication(s)"],
+              extension.taskName)
         }
-
-        // 6. create the "release" convenient task
-        project.task([dependsOn: releaseMasterTask,
-                      description: "Releases [${RELEASE_MASTER_CONFIGURATION}] configuration to publication(s)"],
-            extension.taskName)
       }
     }
   }

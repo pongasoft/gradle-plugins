@@ -15,10 +15,9 @@
  */
 package org.pongasoft.gradle.plugins
 
-import org.gradle.api.Action
+
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.plugins.BasePlugin
 import org.pongasoft.gradle.core.ReleaseType
 import org.pongasoft.gradle.utils.Utils
@@ -27,8 +26,8 @@ import org.pongasoft.gradle.utils.Utils
  * This plugin adds the `sonatype` extension to easily configure deployment to maven central.
  *
  * - populate the credentials by looking at argument on command line/env/userConfig/spec
- * - use snapshot vs non snapshot urls automatically
- * - you can use `legacy` or `s01` configurator depending on situation
+ * - use snapshots vs non snapshots urls
+ * - use `legacy` or `s01` repositories
  */
 class SonatypePublishingPlugin implements Plugin<Project> {
   /**
@@ -46,53 +45,46 @@ class SonatypePublishingPlugin implements Plugin<Project> {
 }
 
 /**
- * Configure the maven repository for sonatype */
-class SonatypeMavenConfigurator implements Action<MavenArtifactRepository> {
-  private Project _project
-  private String _name
-  private def _url
+ * Encapsulates url/snapshots url */
+class SonatypeRepository {
+  final String url
+  final String snapshotsUrl
 
-  SonatypeMavenConfigurator(Project project, String name, def url) {
-    _project = project
-    _name = name
-    _url = url
+  SonatypeRepository(String baseUrl) {
+    url = SonatypePublishingPluginExtension.url(baseUrl)
+    snapshotsUrl = SonatypePublishingPluginExtension.snapshotsUrl(baseUrl)
   }
 
-  void execute(MavenArtifactRepository repository) {
-    repository.name = _name
-    repository.url = _url
-    repository.credentials {
-      username = Utils.getConfigProperty(_project, "sonatype.username")
-      password = Utils.getConfigProperty(_project, "sonatype.password")
-    }
+  String conditionedOn(ReleaseType releaseType) {
+    releaseType.isSnapshot ? snapshotsUrl : url
   }
 }
 
 /**
- * Simple extension which offers 2 default configurators `legacy` and `s01` and a `generic` one to provide your own
- * url */
+ * Extension which gives access to the sonatype urls (legacy vs s01 and snapshots) and access to extracted
+ * username and password */
 class SonatypePublishingPluginExtension {
   private Project _project
+
+  static final String LEGACY_URL = "https://oss.sonatype.org"
+  static final String S01_URL = "https://s01.oss.sonatype.org"
+
+  static final SonatypeRepository s01 = new SonatypeRepository(S01_URL)
+  static final SonatypeRepository legacy = new SonatypeRepository(LEGACY_URL)
 
   SonatypePublishingPluginExtension(Project project) {
     _project = project
   }
 
-  SonatypeMavenConfigurator legacy(String name) {
-    return new SonatypeMavenConfigurator(_project, name, computeUrlFromReleaseType("https://oss.sonatype.org"))
+  static String url(String baseUrl) { "$baseUrl/service/local/staging/deploy/maven2/".toString() }
+
+  static String snapshotsUrl(String baseUrl) { "$baseUrl/content/repositories/snapshots/".toString() }
+
+  String getUsername() {
+    Utils.getConfigProperty(_project, "sonatype.username")
   }
 
-  SonatypeMavenConfigurator s01(String name) {
-    return new SonatypeMavenConfigurator(_project, name, computeUrlFromReleaseType("https://s01.oss.sonatype.org"))
-  }
-
-  SonatypeMavenConfigurator generic(String name, def url) {
-    return new SonatypeMavenConfigurator(_project, name, url)
-  }
-
-  def computeUrlFromReleaseType(def baseUrl) {
-    return ReleaseType.from(_project).isSnapshot ?
-        "$baseUrl/content/repositories/snapshots/" :
-        "$baseUrl/service/local/staging/deploy/maven2/"
+  String getPassword() {
+    Utils.getConfigProperty(_project, "sonatype.password")
   }
 }
