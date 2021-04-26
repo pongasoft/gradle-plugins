@@ -122,7 +122,7 @@ class ReleasePlugin implements Plugin<Project>
        * task: groovydocJar
        ********************************************************/
       project.task([type: Jar, dependsOn: "groovydoc"], 'groovydocJar') {
-        archiveClassifier.set('groovydoc')
+        archiveClassifier.set('javadoc')
         from project.groovydoc.destinationDir
       }
 
