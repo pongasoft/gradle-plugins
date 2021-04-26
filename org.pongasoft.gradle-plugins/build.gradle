@@ -54,7 +54,8 @@ def orgPongasoftPlugins = [
     "spec",
     "userConfig",
     "buildInfo",
-    "signing"
+    "signing",
+    "sonatypePublishing"
 ]
 
 gradlePlugin {
