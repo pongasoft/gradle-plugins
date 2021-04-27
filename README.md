@@ -8,16 +8,34 @@ In order to use the plugins you need to add this to your build script:
 
         buildscript {
           dependencies {
-            classpath 'org.pongasoft:org.pongasoft.gradle-plugins:2.2.10'
+            classpath 'org.pongasoft:org.pongasoft.gradle-plugins:3.0.0'
           }
         }
 
+Note that since 3.0.0, this plugin is now published in maven central.
+
 3 - Plugins
 ===========
+
+3.0 - Release type concept
+--------------------------
+Most plugins exposes the `releaseType` property (of type `org.pongasoft.gradle.core.ReleaseType`) which is an 
+enumeration describing for what type of release the current build is being done. 
+
+- whether the build is producing snapshots or not (determined by whether the version ends with `-SNAPSHOT`). If you use
+  the `org.pongasoft.spec` as described below then it will be in snapshot mode unless you provide `-Prelease=true`
+  when building.
+- whether the release is being done in a local repository or remote repository (determined by the `remote` property
+  which can be set by `-Premote=true` when building)
+
+Note that this concept is exported by most plugins, but is actually not being used by them. It is a convenience that allows
+you to conditionally setup publications and repositories or create/disable tasks based on this value. See `publishing.gradle`
+for a good example on how this property is being used to dynamically define the kind of publication and repository to use.
+
   
 3.1 - `org.pongasoft.userConfig`
 -------------------------------
-`org.pongasoft.userConfig` is a plugin which attempts to load user configuration (for the gradle
+This plugin plugin attempts to load user configuration (for the gradle
 build) in the following files (values read last overrides previous values) and make it available
 to all gradle build files as a `userConfig` object (instance of `groovy.util.ConfigObject`). 
 Check [groovy.util.ConfigSlurper](http://groovy-lang.org/gapi/groovy/util/ConfigSlurper.html) for details on the syntax.
@@ -41,20 +59,33 @@ This plugin should be used only in the root project when doing a multi project b
 
 3.2 - `org.pongasoft.spec`
 -------------------------
-`org.pongasoft.spec` is a plugin which reads a file called `project-spec.groovy` (or
+This plugin reads a file called `project-spec.groovy` (or
 `project-spec.json`) and makes it available in all build files as a `spec` object (instance of
-`java.util.Map`). This plugin automatically handles `spec.version` in this fashion: always force
+`java.util.Map`).
+
+This plugin automatically handles `spec.version` in this fashion: always force
 snapshot mode (meaning version ends with `-SNAPSHOT`) unless `-Prelease=true` is provided when
 running the build. See an [example](https://github.com/pongasoft/gradle-plugins/blob/master/project-spec.groovy) of
 this file and how it is being used in this project itself!
 
-3.3. - `org.pongasoft.repository`
---------------------------------
-`org.pongasoft.repository` is a plugin which allows you to externalize repository configuration
-and override it with your own defaults (for example if you do not want to use maven central). In a
-similar fashion to the `org.pongasoft.userConfig` plugin, it reads an optional set of files (values
+The recommended approach is to define it this way (at the root level)
+
+        apply plugin: 'org.pongasoft.spec'
+
+        allprojects {
+          group = spec.group
+          version = spec.version
+        }
+
+
+
+3.3. - `org.pongasoft.externalRepositories`
+-------------------------------------------
+This plugin allows you to externalize repository configuration
+and override it with your own defaults (for example if you do not want to use maven central). Similarly to the 
+`org.pongasoft.userConfig` plugin, it reads an optional set of files (values
 read last overrides previous values) and makes it available to all build files as a
-`allRepositories` object (instance of [org.pongasoft.gradle.core.RepositoryPluginExtension](https://github.com/pongasoft/gradle-plugins/blob/master/buildSrc/src/main/groovy/org/linkedin/gradle/core/RepositoryPluginExtension.groovy)).
+`externalRepositories` object (instance of [org.pongasoft.gradle.core.RepositoryPluginExtension](https://github.com/pongasoft/gradle-plugins/blob/master/buildSrc/src/main/groovy/org/linkedin/gradle/core/RepositoryPluginExtension.groovy)).
 
         repositories.gradle
         repositories-${project.group}.gradle
@@ -76,59 +107,42 @@ Those files are looked into the following folders:
 You can provide your own location by using `-Prepositories.gradle=...` (this will override the
 entire list).
 
-This plugin can be used only in the root project when doing a multi project build. But if you want
-to access `project` specific values, then you need to apply it in each sub projects
-
-You can define any repository name and they are made available into any build script:
+You can define any repository names, and they are made available into any build script:
 
         buildscript {
-          allRepositories.buildscript.configure()
+          externalRepositories.buildscript.configure()
         }
 
-        allRepositories.build.configure()
+        externalRepositories.build.configure()
 
 
-This plugin no longer supports bintray following the [JFrog sunsetting bintray](https://jfrog.com/blog/into-the-sunset-bintray-jcenter-gocenter-and-chartcenter/)
+This plugin no longer supports bintray following [JFrog sunsetting bintray](https://jfrog.com/blog/into-the-sunset-bintray-jcenter-gocenter-and-chartcenter/)
 
 Check the `repositories.gradle` file that comes with this project for examples.
 
 3.4 - `org.pongasoft.release`
 ----------------------------
-`org.pongasoft.release` is a plugin which adds `release` and `publish` tasks. `release` is supposed
-to build and release in a local repository. `publish` is supposed to publish in a remote
-repository. By default, `publish` will publish (without rebuilding!) what has been released when
-invoking the `release` task on a previous build. This allows the following use case: build and
-release (locally), do some sanity check and if everything is ok, then do a `publish` which will
-simply publish what has already been built. If you want to rebuild on `publish` then simply add
-the property `-Prebuild=true`. If it is a java or groovy project, it also releases/publishes
-sources, javadoc and groovydoc. The plugin also knows about snapshots (where the version ends
-with `-SNAPSHOT`). The repositories are configured using the `org.pongasoft.repository` plugin
-with the following values:
+This plugin does the following (by default):
 
-        allRepositories.release -> for release
-        allRepositories.snapshotRelease -> for release of snapshots
-        allRepositories.publish -> for publish
-        allRepositories.snapshotPublish -> for publish of snapshots
+- creates a `releaseMaster` configuration which extends `archives`
+- creates `javadocJar`, `groovydocJar` and `sourcesJar` tasks (depending on the kind of artifacts built)
+- creates a `release` task which automatically publishes all the artifacts that are part of the `releaseMaster` configuration using a publication named `release` in a repository named `release`
 
-See [repositories.gradle](https://github.com/pongasoft/gradle-plugins/blob/master/repositories.gradle)
-for an example of configuration.
+This plugin is highly configurable:
 
-Note that local vs remote is not enforced and totally depends on how you set up the repositories.
-By default `release` does a build and release, and `publish` does a publish of what has already
-been built and released in a previous build.
+- you can change the configurations (`release.releaseConfigurations`, `release.sourcesConfigurations`, `release.javadocConfigurations`, `release.groovydocConfigurations`)
+- you can change the name of the task, repository or publication (all defaulting to `release`)
+- you can disable the creation of the task entirely by setting `release.repositoryName` (or `release.publicationName`) to `null`
+- you can invoke `release.createConfigurationPublicationTask(...)` to create your own task(s) to publish a particular configuration in a particular combination of publication/repository (useful after disabling the main task generation)
 
-The plugin adds a `release` extension which allows you to change which repository gets used on a
-per project basis:
+This plugin exports the `releaseType` concept.
 
-        release  {
-          publish = allRepositories.distributions
-        }
-
-This plugin is used in every project that needs to be released.
+Note that since 3.0.0, this plugin is no longer aware of snapshots or remote as this is directly handled in the 
+publication itself by using the `releaseType` concept.
 
 3.5 - `org.pongasoft.cmdline`
 ----------------------------
-`org.pongasoft.cmdline` is a plugin which adds the following tasks:
+This plugin adds the following tasks:
 
 * `package-assemble`: Assembles the package (exploded)
 * `package`: Create the package
@@ -149,7 +163,7 @@ as executables.
 All files under `src/cmdline/resources` are also processed through a replacement token plugin if
 you provide replacement tokens.
 
-This plugin is highly configurable through the [CmdLinePluginConvention](https://github.com/pongasoft/gradle-plugins/blob/master/buildSrc/src/main/groovy/org/linkedin/gradle/plugins/CmdLinePlugin.groovy)
+This plugin is highly configurable through the [CmdlinePluginConvention](https://github.com/pongasoft/gradle-plugins/blob/master/buildSrc/src/main/groovy/org/linkedin/gradle/plugins/CmdlinePlugin.groovy)
 available in the build file
 as `cmdline`:
 
@@ -172,7 +186,7 @@ the root of the package. To disable this feature use:
 
 3.6 - `org.pongasoft.buildInfo`
 -------------------------------
-`org.pongasoft.buildInfo` is a plugin which adds the property `buildInfo` to the root project and
+This plugin adds the property `buildInfo` to the root project and
 generates a file (at the root of the build) when the build completes. The content of this file is
 a json representation of the `buildInfo`. Example of content:
 
@@ -189,15 +203,69 @@ a json representation of the `buildInfo`. Example of content:
             "buildDuration": 13996,
             "buildDurationString": "13.996 secs",
             "buildTasks": [
-                "publish"
+                "release"
             ]
         }
+
+3.7 - `org.pongasoft.signing`
+-----------------------------
+This plugin does the following:
+
+- automatically populates `signing.keyId`, `signing.password` and `signing.secretKeyRingFile` properties
+  from values defined either in `userConfig` file (see `org.pongasoft.userConfig` plugin), `project-spec.groovy`
+  (see `org.pongasoft.spec` plugin), command line (ex: `-Psigning.keyId=xxx`) or an environment variable
+  (ex: `SIGNING_KEY`)
+- apply the `signing` plugin to the publications (`sign project.publishing.publications`)
+
+3.8 - `org.pongasoft.externalPublishing`
+----------------------------------------
+This plugin allows you to externalize publishing configuration and override it with your own defaults. Similarly to the 
+`org.pongasoft.userConfig` plugin, it reads an optional set of files (values read last overrides previous values). See
+`publishing.gradle` in this project for an example.
+
+        publishing.gradle
+        publishing-${project.group}.gradle
+        publishing-${project.rootProject.name}.gradle
+        publishing-${project.name}.gradle
+        publishing-${project.group}-${project.name}.gradle
+        publishing-${project.rootProject.name}-${project.group}.gradle
+        publishing-${project.rootProject.name}-${project.name}.gradle
+        publishing-${project.rootProject.name}-${project.group}-${project.name}.gradle
+
+Those files are looked into the following folders:
+
+        ${project.rootProject.projectDir}/${filename} // if different from .
+        ./${filename}
+        ${user.home}/.${project.group}/${filename}
+        ${user.home}/.gradle/${filename}
+        ${user.home}/.${filename}
+
+You can provide your own location by using `-Ppublishing.gradle=...` (this will override the entire list).
+
+3.9 - `org.pongasoft.sonatypePublishing`
+----------------------------------------
+This plugin adds the `sonatype` extension property (of type `org.pongasoft.gradle.plugins.SonatypePublishingExtension`) to allow 
+easy configuration when publishing to maven central. For example:
+
+        repositories {
+          maven {
+            name = "release"
+            url = sonatype.s01.conditionedOn(releaseType)
+            credentials {
+                username = sonatype.username
+                password = sonatype.password
+            }
+          }
+        }
+
+`sonatype.username` and `sonatype.password` behaves like the `org.pongasoft.signing` plugin in how to populate this
+values (user config, project spec, command line or environment variable).
 
 4 - Compilation
 ===============
 In order to compile the code you need
 
-* java 1.7+
+* java 1.8+
 
 At the top simply run
 
@@ -211,8 +279,8 @@ which should compile and run all the tests.
   *  Contains the code of the plugins
 
 * `org.pongasoft.gradle-plugins`
-  * Simple wrapper which uses the plugin themselves to recompile them and make them available for
-release/publish
+  * Project that creates the jar file for the plugins (using the `java-gradle-plugin` plugin) so that it can be 
+    released
 
 6 - Build configuration
 =======================
@@ -222,6 +290,4 @@ described in the plugin
         Example:
         ~/.userConfig.properties
         top.build.dir="/Volumes/Disk2/deployment/${userConfig.project.name}"
-        top.install.dir="/export/content/${userConfig.project.name}"
         top.release.dir="/export/content/repositories/release"
-        top.publish.dir="/export/content/repositories/publish"

@@ -1,3 +1,13 @@
+3.0.0 (2021/04/27)
+------------------
+* Removed jcenter
+* use of `gradle 6.8`
+* Major refactoring of the release and repository plugins to use the `publishing` concepts 
+  (old concepts removed in gradle 7.0)
+* Renamed all plugins to `org.pongasoft`
+* Changed `allRepositories` to `externalRepositories`  
+* Added plugins `org.pongasoft.externalPublishing`, `org.pongasoft.signing`, `org.pongasoft.sonatypePublishing`
+
 2.2.9 (2017/10/08)
 ------------------
 * use of `Java 8`
