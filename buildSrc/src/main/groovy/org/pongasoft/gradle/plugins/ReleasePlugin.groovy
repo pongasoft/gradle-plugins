@@ -102,40 +102,46 @@ class ReleasePlugin implements Plugin<Project>
    * Look for java/groovy to add javadoc/groovydoc and sources
    */
   private void addSourcesAndDocs(ReleasePluginExtension extension) {
-    boolean hasSources = false
-    def javaSources = project.tasks.findByName('javadoc')?.source
-    if (javaSources && !javaSources.isEmpty()) {
-      /********************************************************
-       * task: javadocJar
-       ********************************************************/
-      project.task([type: Jar, dependsOn: "javadoc"], 'javadocJar') {
-        archiveClassifier.set('javadoc')
-        from project.javadoc.destinationDir
-      }
 
-      hasSources = true
-    }
+    def javaSources = project.tasks.findByName('javadoc')?.source
+    boolean hasJavaSources = javaSources && !javaSources.isEmpty()
 
     def groovySources = project.tasks.findByName('groovydoc')?.source
-    if (groovySources && !groovySources.isEmpty()) {
-      /********************************************************
-       * task: groovydocJar
-       ********************************************************/
-      project.task([type: Jar, dependsOn: "groovydoc"], 'groovydocJar') {
-        archiveClassifier.set('javadoc')
-        from project.groovydoc.destinationDir
-      }
+    boolean hasGroovySources = groovySources && !groovySources.isEmpty()
 
-      hasSources = true
-    }
+    boolean hasSources = hasJavaSources || hasGroovySources
 
     if (hasSources) {
+
+      if(hasJavaSources && !project.tasks.findByName('javadocJar')) {
+        /********************************************************
+         * task: javadocJar
+         ********************************************************/
+          project.task([type: Jar, dependsOn: 'javadoc'], 'javadocJar') {
+            archiveClassifier.set('javadoc')
+            from project.javadoc.destinationDir
+          }
+        }
+
+      if(hasGroovySources && !project.tasks.findByName('groovydocJar')) {
+        /********************************************************
+         * task: groovydocJar
+         ********************************************************/
+        project.task([type: Jar, dependsOn: 'groovydoc'], 'groovydocJar') {
+          // maven central requires javadoc so if only groovy we need to rename it
+          archiveClassifier.set(hasJavaSources ? 'groovydoc' : 'javadoc')
+          from project.groovydoc.destinationDir
+        }
+      }
+
       /********************************************************
        * task: sourcesJar
        ********************************************************/
-      project.task([type: Jar, dependsOn: "classes"], 'sourcesJar') {
-        archiveClassifier.set('sources')
-        from project.sourceSets.main.allSource
+      if(!project.tasks.findByName('sourcesJar')) {
+        project.task([type: Jar, dependsOn: "classes"], 'sourcesJar') {
+          archiveClassifier.set('sources')
+          from project.sourceSets.main.allSource
+        }
       }
     }
 

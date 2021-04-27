@@ -8,7 +8,7 @@ In order to use the plugins you need to add this to your build script:
 
         buildscript {
           dependencies {
-            classpath 'org.pongasoft:org.pongasoft.gradle-plugins:3.0.0'
+            classpath 'org.pongasoft:org.pongasoft.gradle-plugins:3.0.1'
           }
         }
 

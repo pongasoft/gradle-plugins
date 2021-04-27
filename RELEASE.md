@@ -1,4 +1,8 @@
-3.0.0 (2021/04/27)
+3.0.1 (2021/04/27)
+------------------
+* Fix when both javadoc and groovydoc
+
+3.0.0 (2021/04/26)
 ------------------
 * Removed jcenter
 * use of `gradle 6.8`
