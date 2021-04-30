@@ -47,6 +47,7 @@ public class BuildInfo
   String buildDurationString
   def buildTasks
   def buildProperties
+  def releasedComponent
   def releasedArtifacts = Collections.synchronizedCollection([])
   def publishedArtifacts = Collections.synchronizedCollection([])
 
@@ -94,6 +95,10 @@ public class BuildInfo
   void addReleasedArtifacts(Project project, Configuration configuration)
   {
     addArtifacts(project, configuration, releasedArtifacts)
+  }
+
+  void addReleasedComponent(def component) {
+    releasedComponent = component
   }
 
   private static void addArtifacts(Project project, Configuration configuration, def artifacts)
@@ -171,6 +176,9 @@ public class BuildInfo
 
     if(buildTasks)
       map.buildTasks = buildTasks
+
+    if(releasedComponent)
+      map.releasedComponent = releasedComponent
 
     if(releasedArtifacts)
       map.releasedArtifacts = releasedArtifacts

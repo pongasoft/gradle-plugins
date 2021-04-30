@@ -1,3 +1,7 @@
+3.0.2 (2021/04/30)
+------------------
+* Fix for dependencies not included in pom: instead of publishing artifacts, publish a software component (+ other artifacts like javadoc and sources)
+
 3.0.1 (2021/04/27)
 ------------------
 * Fix when both javadoc and groovydoc

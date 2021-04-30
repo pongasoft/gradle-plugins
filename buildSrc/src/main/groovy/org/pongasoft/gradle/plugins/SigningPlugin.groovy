@@ -22,11 +22,11 @@ import org.gradle.api.publish.plugins.PublishingPlugin
 import org.pongasoft.gradle.utils.Utils
 
 /**
- * The purpose of this plugin is to apply the `signing` plugin and automatically:
+ * The purpose of this plugin is to apply the <code>signing</code> plugin and automatically:
  *
  * - populate the necessary properties by looking at argument on command line/env/userConfig/spec
  * - add releaseMaster to the signed artifact (which adds a signReleaseMaster task) if
- *   `org.pongasoft.release` is used
+ *   <code>org.pongasoft.release</code> is used
  */
 class SigningPlugin implements Plugin<Project> {
   private Project project

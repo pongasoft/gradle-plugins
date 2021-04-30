@@ -34,13 +34,11 @@ import org.pongasoft.gradle.utils.Utils
  * the 'releaseMaster' configuration or to a new configuration and make 'releaseMaster' extends
  * from it.
  *
- * By convention ({@link ReleasePluginExtension#releaseConfigurations}) 'releaseMaster' extends
- * from 'archives'.
- *
  * @author ypujante@linkedin.com */
 class ReleasePlugin implements Plugin<Project>
 {
   public static final String RELEASE_MASTER_CONFIGURATION = 'releaseMaster'
+  public static final String RELEASE_MASTER_TASK_NAME = 'releaseMaster'
 
   Project project
 
@@ -62,6 +60,9 @@ class ReleasePlugin implements Plugin<Project>
     // creating releaseMaster configuration
     Configuration releaseMasterConfiguration = findOrAddConfiguration(project, RELEASE_MASTER_CONFIGURATION)
 
+    // Create the task so that it is available in other plugins
+    project.tasks.register(RELEASE_MASTER_TASK_NAME)
+
     /**
      * Needs to be executed after the build script has been evaluated
      */
@@ -75,18 +76,20 @@ class ReleasePlugin implements Plugin<Project>
       // 2. Add sources and docs
       addSourcesAndDocs(extension)
 
-      // 3. Create releaseMaster task
+      // 3. Populate releaseMaster task
       if(extension.publicationName && extension.repositoryName) {
-        Task releaseMasterTask =
-            extension.createConfigurationPublicationTask(releaseMasterConfiguration.name,
-                                                         "releaseMaster",
-                                                         extension.publicationName,
-                                                         extension.repositoryName)
+        Task releaseMasterTask = extension.task(RELEASE_MASTER_TASK_NAME,
+                                                extension.publicationName,
+                                                extension.repositoryName,
+                                                extension.releaseComponent,
+                                                releaseMasterConfiguration.name)
 
         if(releaseMasterTask) {
           // 4. add the artifacts that were just released to the build info
           releaseMasterTask.doLast {
             buildInfo.addReleasedArtifacts(project, releaseMasterConfiguration)
+            if(extension.releaseComponent)
+              buildInfo.addReleasedComponent(extension.releaseComponent)
           }
 
           // 6. create the "release" convenient task
@@ -223,7 +226,8 @@ class ReleasePluginExtension
     _project = project
   }
   
-  def releaseConfigurations = ['archives'] as Set
+  def releaseComponent = 'java'
+  def releaseConfigurations = [] as Set
   def sourcesConfigurations = [sources: []]
   def javadocConfigurations = [javadoc: ['docs']]
   def groovydocConfigurations = [groovydoc: ['docs']]
@@ -233,37 +237,53 @@ class ReleasePluginExtension
   def publicationName = "release"
 
   /**
-   * Creates a task with the provided name that will publish all artifacts defined by the provided configuration
-   * in the publication defined by the combination `publicationName`/`repositoryName`
+   * Registers (or reuse if exists) a task with the provided name. The (optional) component is added to the
+   * publication. The artifacts from the (optional) configuration are also added to the publication. The task
+   * is a shortcut to invoking the <code>publishXXXPublicationToYYYRepository</code> with a more manageable name
+   * (provided as argument to this call)
    *
-   * @return the task or `null` if the configuration, publication or repository does not exist */
-  Task createConfigurationPublicationTask(String configurationName,
-                                          String taskName,
-                                          String publicationName,
-                                          String repositoryName) {
-    
-    def configuration = _project.configurations.findByName(configurationName)
-    if(configuration == null) {
-      _project.logger.warn("[${_project.name}]: Could not find a configuration named [${configurationName}]")
-      return null
-    }
+   * @return the task or <code>null</code> if the configuration, component, publication or repository does not exist */
+  Task task(String taskName,
+            String publicationName,
+            String repositoryName,
+            String componentName = null,
+            String configurationName = null) {
 
     def publication = _project.publishing.publications.findByName(publicationName)
 
-    // add all the artifacts from the configuration to the publication
     if(publication) {
-      configuration.allArtifacts.each { artifact ->
-        if(artifact instanceof PublishArtifactImpl)
-          artifact.addToPublication(publication)
-        else
-          publication.artifact(artifact)
+      // add the main software components
+      if(componentName) {
+        def component = _project.components.findByName(componentName)
+        if(component) {
+          publication.from(component)
+        } else {
+          _project.logger.warn("[${_project.name}]: Could not find a component named [${componentName}]")
+          return null
+        }
+      }
+
+      // add other artifacts
+      if(configurationName) {
+        def configuration = _project.configurations.findByName(configurationName)
+        if (configuration == null) {
+          _project.logger.warn("[${_project.name}]: Could not find a configuration named [${configurationName}]")
+          return null
+        }
+
+        configuration.allArtifacts.each { artifact ->
+          if (artifact instanceof PublishArtifactImpl)
+            artifact.addToPublication(publication)
+          else
+            publication.artifact(artifact)
+        }
       }
     }
 
     def repository = _project.publishing.repositories.findByName(repositoryName)
 
     if(repository != null && publication != null) {
-      Task task = _project.tasks.register(taskName).get()
+      Task task = _project.tasks.findByName(taskName) ?: _project.tasks.register(taskName).get()
       task.dependsOn("publish${publication.name.capitalize()}PublicationTo${repository.name.capitalize()}Repository")
       return task
     }

@@ -20,3 +20,6 @@ apply plugin: org.pongasoft.gradle.plugins.ExternalPublishingPlugin
 apply plugin: org.pongasoft.gradle.plugins.ReleasePlugin
 apply plugin: org.pongasoft.gradle.plugins.SigningPlugin
 
+release {
+  releaseComponent = null
+}

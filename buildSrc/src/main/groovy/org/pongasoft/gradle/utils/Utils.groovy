@@ -103,7 +103,7 @@ class Utils
   }
 
   /**
-   * @return `true` if the version is a snapshot version defined by `-SNAPSHOT` at the end */
+   * @return <code>true</code> if the version is a snapshot version defined by <code>-SNAPSHOT</code> at the end */
   static boolean isSnapshotVersion(Project project) {
     return project.version.endsWith('-SNAPSHOT')
   }

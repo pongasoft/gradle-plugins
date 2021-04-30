@@ -23,11 +23,11 @@ import org.pongasoft.gradle.core.ReleaseType
 import org.pongasoft.gradle.utils.Utils
 
 /**
- * This plugin adds the `sonatype` extension to easily configure deployment to maven central.
+ * This plugin adds the <code>sonatype</code> extension to easily configure deployment to maven central.
  *
  * - populate the credentials by looking at argument on command line/env/userConfig/spec
  * - use snapshots vs non snapshots urls
- * - use `legacy` or `s01` repositories
+ * - use <code>legacy</code> or <code>s01</code> repositories
  */
 class SonatypePublishingPlugin implements Plugin<Project> {
   /**

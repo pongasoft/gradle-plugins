@@ -124,16 +124,20 @@ Check the `repositories.gradle` file that comes with this project for examples.
 ----------------------------
 This plugin does the following (by default):
 
-- creates a `releaseMaster` configuration which extends `archives`
+- creates an empty `releaseMaster` configuration
 - creates `javadocJar`, `groovydocJar` and `sourcesJar` tasks (depending on the kind of artifacts built)
-- creates a `release` task which automatically publishes all the artifacts that are part of the `releaseMaster` configuration using a publication named `release` in a repository named `release`
+- creates a `release` task which automatically publishes the `java` software component as well as all the artifacts 
+  that are part of the `releaseMaster` configuration using a publication named `release` in a repository named `release`
 
 This plugin is highly configurable:
 
+- you can change the software component (`release.releaseComponent`)
 - you can change the configurations (`release.releaseConfigurations`, `release.sourcesConfigurations`, `release.javadocConfigurations`, `release.groovydocConfigurations`)
 - you can change the name of the task, repository or publication (all defaulting to `release`)
 - you can disable the creation of the task entirely by setting `release.repositoryName` (or `release.publicationName`) to `null`
-- you can invoke `release.createConfigurationPublicationTask(...)` to create your own task(s) to publish a particular configuration in a particular combination of publication/repository (useful after disabling the main task generation)
+- you can invoke `release.task(...)` to create your own task(s) to publish a particular component and/or 
+  configuration artifacts in a particular combination of publication/repository (useful after disabling 
+  the main task generation)
 
 This plugin exports the `releaseType` concept.
 

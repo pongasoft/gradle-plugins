@@ -219,13 +219,15 @@ class CmdlinePlugin implements Plugin<Project>
           from root
           include pattern
           compression = convention.compression
-          destinationDir = convention.packageFile.parentFile
-          archiveName = convention.packageFile.name
+          destinationDirectory = convention.packageFile.parentFile
+          archiveFileName = convention.packageFile.name
         }
 
       packageTask.doLast {
         logger."${convention.cmdlineLogLevel}"("Created package [${convention.packageFile}]")
       }
+
+      project.tasks.findByName(ReleasePlugin.RELEASE_MASTER_TASK_NAME)?.dependsOn(packageTask)
 
       project.task([type: SingleArtifactTask, dependsOn: packageTask],
                    "package-assemble-artifact") {
@@ -235,7 +237,7 @@ class CmdlinePlugin implements Plugin<Project>
           extension:      convention.packageExtension,
           configurations: convention.artifactConfigurations
         ]
-      }
+     }
     }
   }
 
